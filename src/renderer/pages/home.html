@@ -1,0 +1,281 @@
+<style>
+.page-header {
+    text-align: left;
+    margin-bottom: 24px;
+}
+
+.greeting {
+    font-size: 30px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+.slogan {
+    font-size: 16px;
+    font-weight: normal;
+    margin-bottom: 0;
+    color: rgba(255,255,255,0.7);
+}
+
+.home-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.current-version-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.current-version-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.current-version-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.current-version-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.current-version-name {
+    font-size: 28px;
+    font-weight: 600;
+    color: white;
+}
+
+.current-version-type {
+    padding: 6px 14px;
+    background: rgba(76,175,80,0.3);
+    border-radius: 6px;
+    color: #4CAF50;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.current-version-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.play-btn {
+    flex: 1;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.play-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(76,175,80,0.3);
+}
+
+.play-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.manage-btn {
+    padding: 14px 20px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.manage-btn:hover {
+    background: rgba(255,255,255,0.15);
+}
+
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.quick-action-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.quick-action-card:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.2);
+    transform: translateY(-2px);
+}
+
+.quick-action-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.quick-action-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 4px;
+}
+
+.quick-action-desc {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+}
+
+.no-version-state {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.no-version-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.no-version-text {
+    font-size: 16px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 20px;
+}
+
+.no-version-btn {
+    padding: 12px 32px;
+    background: #1976D2;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.no-version-btn:hover {
+    background: #1565C0;
+}
+</style>
+
+<div class="page-header">
+    <h1 id="greeting" class="greeting"></h1>
+    <p id="slogan" class="slogan"></p>
+</div>
+
+<!-- <div class="home-content">
+    <div class="current-version-card" id="current-version-card">
+        <div class="current-version-header">
+            <div class="current-version-title">当前版本</div>
+        </div>
+        <div id="version-content">
+        </div>
+    </div>
+
+</div> -->
+
+<script>
+let installedVersions = [];
+
+async function loadHomePage() {
+    await loadInstalledVersions();
+    renderCurrentVersion();
+}
+
+async function loadInstalledVersions() {
+    try {
+        installedVersions = await window.simpmcAPI.getInstalledVersions();
+    } catch (error) {
+        console.error('Failed to load versions:', error);
+        installedVersions = [];
+    }
+}
+
+function renderCurrentVersion() {
+    const container = document.getElementById('version-content');
+    
+    if (installedVersions.length === 0) {
+        container.innerHTML = `
+            <div class="no-version-state">
+                <div class="no-version-icon">🎮</div>
+                <div class="no-version-text">还没有安装任何游戏版本</div>
+                <button class="no-version-btn" onclick="switchPage('download')">下载一个版本</button>
+            </div>
+        `;
+        return;
+    }
+    
+    const version = installedVersions[0];
+    const type = version.type || 'release';
+    const isIsolated = version.isolation?.enabled;
+    
+    container.innerHTML = `
+        <div class="current-version-info">
+            <div class="current-version-name">${escapeHtml(version.id)}</div>
+            <div class="current-version-type ${type}">${getTypeLabel(type)}</div>
+            ${isIsolated ? '<div style="padding: 6px 14px; background: rgba(156, 39, 176, 0.3); border-radius: 6px; color: #CE93D8; font-size: 13px; font-weight: 500;">隔离模式</div>' : ''}
+        </div>
+        <div class="current-version-actions">
+            <button class="play-btn" onclick="playVersion('${escapeHtml(version.id)}')">
+                <span>▶</span>
+                <span>启动游戏</span>
+            </button>
+            <button class="manage-btn" onclick="switchPage('versions')">
+                <span>📦</span>
+                <span>管理版本</span>
+            </button>
+        </div>
+    `;
+}
+
+function getTypeLabel(type) {
+    const labels = {
+        'release': '正式版',
+        'snapshot': '快照版',
+        'april-fools': '愚人节版'
+    };
+    return labels[type] || type;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function playVersion(versionId) {
+    console.log('Playing version:', versionId);
+    alert('游戏启动功能开发中...');
+}
+</script>

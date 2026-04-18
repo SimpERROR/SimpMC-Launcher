@@ -1,0 +1,100 @@
+<style>
+.language-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    padding: 20px 0;
+}
+.language-card-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    height: 100px;
+    background: rgba(25, 118, 210, 0.8);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.language-card-item:hover {
+    background: rgba(25, 118, 210, 1);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-3px);
+}
+.language-card-item.active {
+    background: rgba(25, 118, 210, 1);
+    border-color: #FFFFFF;
+    box-shadow: 0 0 15px rgba(25, 118, 210, 0.5);
+}
+.language-card-flag {
+    font-size: 36px;
+    margin-bottom: 8px;
+}
+.language-card-name {
+    font-size: 14px;
+    color: white;
+    text-align: center;
+}
+.back-btn {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+}
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.back-btn img {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+}
+.page-header {
+    position: relative;
+    height: 40px;
+    padding: 0 0 0 50px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+}
+.page-header h1 {
+    text-align: left;
+    margin: 0;
+    line-height: 40px;
+}
+</style>
+
+<div class="page-header">
+    <button class="back-btn" onclick="switchPage('settings')">
+        <img src="../assets/icon/arrow-left-solid-full.svg" alt="Back">
+    </button>
+    <h1 data-i18n="settings.language"></h1>
+</div>
+<div class="page-body">
+    <div class="language-cards">
+        <div class="language-card-item" onclick="selectLanguage('zh-CN')" id="card-zh-CN">
+            <div class="language-card-flag">🇨🇳</div>
+            <div class="language-card-name">中文（简体）</div>
+        </div><br>
+        <div class="language-card-item" onclick="selectLanguage('zh-TW')" id="card-zh-TW">
+            <div class="language-card-flag">🇨🇳</div>
+            <div class="language-card-name">中文（繁体）</div>
+        </div><br>
+        <div class="language-card-item" onclick="selectLanguage('en-US')" id="card-en-US">
+            <div class="language-card-flag">🇺🇸</div>
+            <div class="language-card-name">English</div>
+        </div><br>
+    </div>
+</div>

@@ -1,0 +1,325 @@
+<style>
+.page-header {
+    position: relative;
+    height: 40px;
+    /* padding: 0 0 0 50px; */
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+}
+.page-header h1 {
+    text-align: left;
+    margin: 0;
+    line-height: 40px;
+}
+.back-btn {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+}
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.back-btn img {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+}
+.wardrobe-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+.wardrobe-add-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(25, 118, 210, 0.9);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.wardrobe-add-btn:hover {
+    background: rgba(25, 118, 210, 1);
+    transform: translateY(-2px);
+}
+.wardrobe-add-btn img {
+    width: 16px;
+    height: 16px;
+    filter: brightness(0) invert(1);
+}
+.wardrobe-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.wardrobe-tab {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.wardrobe-tab.active {
+    background: rgba(25, 118, 210, 0.9);
+    color: white;
+    border-color: rgba(25, 118, 210, 0.9);
+}
+.wardrobe-tab:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.1);
+}
+.wardrobe-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+}
+.wardrobe-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+.wardrobe-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+}
+.wardrobe-item.selected {
+    border-color: #1976D2;
+    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.3);
+}
+.wardrobe-preview {
+    width: 100%;
+    height: 140px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    overflow: hidden;
+}
+.wardrobe-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+.skin-head {
+    width: 70px !important;
+    height: 70px !important;
+    object-fit: none !important;
+    clip-path: inset(8px 8px 8px 8px round 4px);
+}
+.wardrobe-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    text-align: center;
+    margin-bottom: 4px;
+}
+.wardrobe-type {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+}
+.wardrobe-item-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    justify-content: center;
+}
+.wardrobe-action-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+.wardrobe-action-btn img {
+    width: 14px;
+    height: 14px;
+    filter: brightness(0) invert(1);
+}
+.wardrobe-action-btn.delete {
+    background: rgba(244, 67, 54, 0.8);
+}
+.wardrobe-action-btn.delete:hover {
+    background: rgba(244, 67, 54, 1);
+}
+.wardrobe-action-btn.edit {
+    background: rgba(25, 118, 210, 0.8);
+}
+.wardrobe-action-btn.edit:hover {
+    background: rgba(25, 118, 210, 1);
+}
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(255, 255, 255, 0.6);
+}
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal-content {
+    background: rgba(40, 40, 40, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 24px;
+    width: 400px;
+    max-width: 90%;
+}
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 20px;
+}
+.modal-input {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    box-sizing: border-box;
+    margin-bottom: 16px;
+}
+.modal-input:focus {
+    outline: none;
+    border-color: #1976D2;
+}
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+.modal-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.modal-btn.cancel {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+}
+.modal-btn.cancel:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.modal-btn.confirm {
+    background: #1976D2;
+    border: none;
+    color: white;
+}
+.modal-btn.confirm:hover {
+    background: #1565C0;
+}
+.hidden {
+    display: none !important;
+}
+</style>
+
+<div class="page-header">
+    <h1 data-i18n="wardrobe.title"></h1>
+</div>
+<div class="page-body">
+    <div class="wardrobe-header">
+        <div class="wardrobe-tabs">
+            <button class="wardrobe-tab active" data-type="skin" onclick="switchWardrobeTab('skin')">
+                <span data-i18n="wardrobe.skin"></span>
+            </button>
+            <button class="wardrobe-tab" data-type="cape" onclick="switchWardrobeTab('cape')">
+                <span data-i18n="wardrobe.cape"></span>
+            </button>
+        </div>
+        <button class="wardrobe-add-btn" onclick="openAddItemModal()">
+            <img src="../assets/icon/plus-solid-full.svg" alt="">
+            <span data-i18n="wardrobe.add"></span>
+        </button>
+    </div>
+    <div class="wardrobe-grid" id="wardrobe-grid">
+        <div class="empty-state">
+            <div class="empty-state-icon">👕</div>
+            <p data-i18n="wardrobe.empty"></p>
+        </div>
+    </div>
+</div>
+
+<div id="delete-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <div class="modal-title" data-i18n="wardrobe.confirm_delete"></div>
+        <p id="delete-item-name" style="color: rgba(255,255,255,0.8); margin-bottom: 20px;"></p>
+        <div class="modal-buttons">
+            <button class="modal-btn cancel" onclick="closeDeleteModal()" data-i18n="common.cancel"></button>
+            <button class="modal-btn confirm" id="confirm-delete-btn" data-i18n="common.confirm"></button>
+        </div>
+    </div>
+</div>
+
+<div id="item-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <div class="modal-title" id="modal-title"></div>
+        <input type="text" class="modal-input" id="item-name-input" data-i18n-placeholder="wardrobe.name_placeholder">
+        <div id="skin-preview-area" style="margin-bottom: 16px;">
+            <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 8px;" data-i18n="wardrobe.select_skin_file"></div>
+            <input type="file" id="skin-file-input" accept=".png" style="display: none;" onchange="handleSkinFileSelect(event)">
+            <button class="wardrobe-add-btn" onclick="document.getElementById('skin-file-input').click()" style="width: 100%; justify-content: center;">
+                <img src="../assets/icon/upload-solid-full.svg" alt="">
+                <span data-i18n="wardrobe.choose_file"></span>
+            </button>
+            <div id="skin-preview" style="margin-top: 10px; text-align: center; color: rgba(255,255,255,0.6); font-size: 12px;"></div>
+        </div>
+        <div id="cape-preview-area" style="margin-bottom: 16px;">
+            <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 8px;" data-i18n="wardrobe.select_cape_file"></div>
+            <input type="file" id="cape-file-input" accept=".png" style="display: none;" onchange="handleCapeFileSelect(event)">
+            <button class="wardrobe-add-btn" onclick="document.getElementById('cape-file-input').click()" style="width: 100%; justify-content: center;">
+                <img src="../assets/icon/upload-solid-full.svg" alt="">
+                <span data-i18n="wardrobe.choose_file"></span>
+            </button>
+            <div id="cape-preview" style="margin-top: 10px; text-align: center; color: rgba(255,255,255,0.6); font-size: 12px;"></div>
+        </div>
+        <div class="modal-buttons">
+            <button class="modal-btn cancel" onclick="closeItemModal()" data-i18n="common.cancel"></button>
+            <button class="modal-btn confirm" id="modal-confirm-btn" onclick="confirmAddItem()" data-i18n="common.confirm"></button>
+        </div>
+    </div>
+</div>

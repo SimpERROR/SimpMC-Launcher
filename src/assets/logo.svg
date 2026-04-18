@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_图层_2" data-name="图层 2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 183 183">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#_未命名的渐变_13);
+      }
+    </style>
+    <linearGradient id="_未命名的渐变_13" data-name="未命名的渐变 13" x1="11.31" y1="171.69" x2="171.69" y2="11.31" gradientUnits="userSpaceOnUse">
+      <stop offset=".09" stop-color="#4488f5"/>
+      <stop offset=".92" stop-color="#67c9f5"/>
+    </linearGradient>
+  </defs>
+  <g id="_图层_1-2" data-name="图层 1">
+    <path class="cls-1" d="m144.5,0H38.5C17.33,0,0,17.33,0,38.5v106c0,21.17,17.33,38.5,38.5,38.5h106c21.17,0,38.5-17.33,38.5-38.5V38.5c0-21.17-17.33-38.5-38.5-38.5ZM39.42,154.32l-12.74,10.29,20.58-38.72L11.72,89.87l83.56-29.65-47.05,37.25,34.31,24.51-43.13,32.35Zm48.46-33.93l47.05-37.25-34.31-24.51,43.13-32.35,12.74-10.29-20.58,38.72,35.53,36.02-83.56,29.65Z"/>
+  </g>
+</svg>

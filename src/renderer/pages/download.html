@@ -1,0 +1,523 @@
+<style>
+.page-header {
+    position: relative;
+    height: 40px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+}
+.page-header h1 {
+    text-align: left;
+    margin: 0;
+    line-height: 40px;
+}
+.back-btn {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+}
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.back-btn img {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+}
+.download-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+.version-select-section {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+}
+.section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 16px;
+}
+.version-type-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+.version-type-btn {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.version-type-btn.active {
+    background: rgba(25, 118, 210, 0.9);
+    color: white;
+    border-color: rgba(25, 118, 210, 0.9);
+}
+.version-type-btn:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.1);
+}
+.version-group {
+    margin-bottom: 12px;
+}
+.version-group:last-child {
+    margin-bottom: 0;
+}
+.version-group-title {
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.version-type-tag.april-fools {
+    background: rgba(255, 152, 0, 0.2);
+    color: #FF9800;
+    border-color: rgba(255, 152, 0, 0.3);
+}
+.download-source-section {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+}
+.source-type-selector {
+    display: flex;
+    gap: 10px;
+}
+.source-type-btn {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.source-type-btn.active {
+    background: rgba(25, 118, 210, 0.9);
+    color: white;
+    border-color: rgba(25, 118, 210, 0.9);
+}
+.source-type-btn:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.1);
+}
+.version-list {
+    max-height: 300px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.version-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: background 0.3s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.version-item:last-child {
+    border-bottom: none;
+}
+.version-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+.version-item.selected {
+    background: rgba(25, 118, 210, 0.2);
+    border-left: 3px solid #1976D2;
+}
+.version-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: white;
+}
+.version-type-tag {
+    font-size: 12px;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.7);
+}
+.version-date {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+}
+.install-path-section {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+}
+.path-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.path-input {
+    flex: 1;
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+}
+.path-input:focus {
+    outline: none;
+    border-color: #1976D2;
+}
+.path-btn {
+    padding: 10px 16px;
+    background: rgba(25, 118, 210, 0.9);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.path-btn:hover {
+    background: rgba(25, 118, 210, 1);
+}
+.download-section {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+}
+.progress-container {
+    margin-bottom: 20px;
+}
+.progress-bar-bg {
+    width: 100%;
+    height: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    overflow: hidden;
+}
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #1976D2, #42A5F5);
+    border-radius: 6px;
+    transition: width 0.3s ease;
+}
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+}
+.progress-status {
+    font-size: 14px;
+    color: white;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+.overall-progress-section {
+    margin-bottom: 16px;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+.section-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 12px;
+}
+.files-progress-section {
+    max-height: 300px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.file-progress-item {
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+.file-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.file-name {
+    font-size: 13px;
+    color: white;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    margin-right: 12px;
+}
+.file-status {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+.file-status.pending {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.6);
+}
+.file-status.downloading {
+    background: rgba(25, 118, 210, 0.3);
+    color: #42A5F5;
+}
+.file-status.verifying {
+    background: rgba(255, 193, 7, 0.3);
+    color: #FFC107;
+}
+.file-status.completed {
+    background: rgba(76, 175, 80, 0.3);
+    color: #4CAF50;
+}
+.file-status.error {
+    background: rgba(244, 67, 54, 0.3);
+    color: #F44336;
+}
+.file-progress-bar-bg {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.file-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #42A5F5, #81D4FA);
+    border-radius: 4px;
+    transition: width 0.2s ease;
+}
+.file-progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+}
+.download-controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+.download-btn {
+    padding: 12px 32px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-width: 120px;
+}
+.download-btn.primary {
+    background: #1976D2;
+    color: white;
+}
+.download-btn.primary:hover {
+    background: #1565C0;
+    transform: translateY(-2px);
+}
+.download-btn.primary:disabled {
+    background: rgba(255, 255, 255, 0.1);
+    cursor: not-allowed;
+    transform: none;
+}
+.download-btn.secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.download-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.download-btn.danger {
+    background: rgba(244, 67, 54, 0.9);
+    color: white;
+}
+.download-btn.danger:hover {
+    background: rgba(244, 67, 54, 1);
+}
+.version-info-section {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+}
+.version-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+.version-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.version-info-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+}
+.version-info-value {
+    font-size: 14px;
+    color: white;
+}
+.loading-state {
+    text-align: center;
+    padding: 40px;
+    color: rgba(255, 255, 255, 0.6);
+}
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #1976D2;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+.hidden {
+    display: none !important;
+}
+</style>
+
+<div class="page-header">
+    <h1 data-i18n="download.title"></h1>
+</div>
+<div class="page-body">
+    <div class="download-container">
+        <div class="download-source-section">
+            <div class="section-title" data-i18n="download.download_source"></div>
+            <div class="source-type-selector">
+                <button class="source-type-btn active" data-source="official" onclick="switchDownloadSource('official')">
+                    <span data-i18n="download.official_source"></span>
+                </button>
+                <button class="source-type-btn" data-source="bmclapi" onclick="switchDownloadSource('bmclapi')">
+                    <span data-i18n="download.bmclapi_source"></span>
+                </button>
+            </div>
+        </div>
+
+        <div class="version-select-section">
+            <div class="section-title" data-i18n="download.select_version"></div>
+            <div class="version-type-selector">
+                <button class="version-type-btn active" data-type="release" onclick="switchVersionType('release')">
+                    <span data-i18n="download.release"></span>
+                </button>
+                <button class="version-type-btn" data-type="snapshot" onclick="switchVersionType('snapshot')">
+                    <span data-i18n="download.snapshot"></span>
+                </button>
+                <button class="version-type-btn" data-type="april-fools" onclick="switchVersionType('april-fools')">
+                    <span>🎭 愚人节</span>
+                </button>
+            </div>
+            <div class="version-list" id="version-list">
+                <div class="loading-state" id="version-loading">
+                    <div class="loading-spinner"></div>
+                    <span data-i18n="download.loading_versions"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="version-info-section hidden" id="version-info-section">
+            <div class="section-title" data-i18n="download.version_info"></div>
+            <div class="version-info-grid">
+                <div class="version-info-item">
+                    <div class="version-info-label" data-i18n="download.version_name"></div>
+                    <div class="version-info-value" id="version-info-name">-</div>
+                </div>
+                <div class="version-info-item">
+                    <div class="version-info-label" data-i18n="download.version_type"></div>
+                    <div class="version-info-value" id="version-info-type">-</div>
+                </div>
+                <div class="version-info-item">
+                    <div class="version-info-label" data-i18n="download.version_date"></div>
+                    <div class="version-info-value" id="version-info-date">-</div>
+                </div>
+                <div class="version-info-item">
+                    <div class="version-info-label" data-i18n="download.download_size"></div>
+                    <div class="version-info-value" id="version-info-size">-</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="install-path-section">
+            <div class="section-title" data-i18n="download.install_path"></div>
+            <div class="path-display">
+                <input type="text" class="path-input" id="install-path-input" readonly>
+                <button class="path-btn" onclick="selectInstallPath()">
+                    <span data-i18n="download.change_path"></span>
+                </button>
+            </div>
+        </div>
+
+        <div class="install-path-section">
+            <div class="section-title">版本隔离</div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="isolate-version" checked style="width: 18px; height: 18px;">
+                    <span style="color: rgba(255,255,255,0.9);">启用版本隔离（推荐）</span>
+                </label>
+            </div>
+            <p style="margin-top: 8px; font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.5;">
+                启用后，每个版本的游戏文件、存档、MOD等将完全独立，不会相互影响。
+            </p>
+        </div>
+        
+        <div class="download-section">
+            <div class="progress-container hidden" id="progress-container">
+                <div class="progress-status" id="progress-status" data-i18n="download.downloading"></div>
+                
+                <!-- 总进度条 -->
+                <div class="overall-progress-section">
+                    <div class="section-label">总进度</div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar" id="overall-progress-bar" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-info">
+                        <span id="overall-progress-downloaded">0 MB</span>
+                        <span id="overall-progress-total">0 MB</span>
+                        <span id="overall-progress-completed">0/0 文件</span>
+                    </div>
+                </div>
+                
+                <!-- 单个文件进度条列表 -->
+                <div class="files-progress-section" id="files-progress-section">
+                    <!-- 动态生成的文件进度条 -->
+                </div>
+            </div>
+            <div class="download-controls">
+                <button class="download-btn primary" id="download-btn" onclick="startDownload()" disabled data-i18n="download.download"></button>
+                <button class="download-btn secondary hidden" id="pause-btn" onclick="pauseDownload()" data-i18n="download.pause"></button>
+                <button class="download-btn secondary hidden" id="resume-btn" onclick="resumeDownload()" data-i18n="download.resume"></button>
+                <button class="download-btn danger hidden" id="cancel-btn" onclick="cancelDownload()" data-i18n="download.cancel"></button>
+            </div>
+        </div>
+    </div>
+</div>

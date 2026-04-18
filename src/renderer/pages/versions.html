@@ -1,0 +1,661 @@
+<style>
+.page-header {
+    position: relative;
+    height: 40px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+}
+.page-header h1 {
+    text-align: left;
+    margin: 0;
+    line-height: 40px;
+}
+.back-btn {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+}
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.back-btn img {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+}
+
+.versions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.version-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.action-btn {
+    padding: 10px 20px;
+    background: rgba(25, 118, 210, 0.9);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.action-btn:hover {
+    background: rgba(25, 118, 210, 1);
+    transform: translateY(-2px);
+}
+
+.action-btn.secondary {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.action-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.refresh-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+}
+
+.refresh-btn img {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+}
+
+.versions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.version-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.3s;
+}
+
+.version-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.version-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.version-info-main {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.version-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+}
+
+.version-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.version-type-tag {
+    padding: 4px 10px;
+    background: rgba(25, 118, 210, 0.3);
+    border-radius: 4px;
+    color: #42A5F5;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.version-type-tag.release {
+    background: rgba(76, 175, 80, 0.3);
+    color: #4CAF50;
+}
+
+.version-type-tag.snapshot {
+    background: rgba(255, 193, 7, 0.3);
+    color: #FFC107;
+}
+
+.version-isolation-tag {
+    padding: 4px 10px;
+    background: rgba(156, 39, 176, 0.3);
+    border-radius: 4px;
+    color: #CE93D8;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.version-card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.card-action-btn {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.card-action-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.card-action-btn.play {
+    background: rgba(76, 175, 80, 0.9);
+    border-color: rgba(76, 175, 80, 0.9);
+    color: white;
+}
+
+.card-action-btn.play:hover {
+    background: rgba(76, 175, 80, 1);
+}
+
+.card-action-btn.delete {
+    background: rgba(244, 67, 54, 0.2);
+    border-color: rgba(244, 67, 54, 0.3);
+    color: #EF9A9A;
+}
+
+.card-action-btn.delete:hover {
+    background: rgba(244, 67, 54, 0.3);
+}
+
+.version-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.version-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.detail-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.detail-value {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    word-break: break-all;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.empty-state-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.empty-state-text {
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.empty-state-hint {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal {
+    background: #1a1a2e;
+    border-radius: 16px;
+    padding: 24px;
+    min-width: 400px;
+    max-width: 90%;
+    transform: scale(0.9);
+    transition: transform 0.3s;
+}
+
+.modal-overlay.active .modal {
+    transform: scale(1);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: white;
+}
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+    margin-bottom: 20px;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+    box-sizing: border-box;
+}
+
+.modal-input:focus {
+    border-color: #1976D2;
+}
+
+.modal-text {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.modal-text strong {
+    color: #FF9800;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.modal-btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.modal-btn.cancel {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.modal-btn.cancel:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-btn.confirm {
+    background: #1976D2;
+    color: white;
+}
+
+.modal-btn.confirm:hover {
+    background: #1565C0;
+}
+
+.modal-btn.danger {
+    background: #F44336;
+    color: white;
+}
+
+.modal-btn.danger:hover {
+    background: #D32F2F;
+}
+</style>
+
+<div class="page-header">
+    <button class="back-btn" onclick="switchPage('home')">
+        <img src="../assets/icon/arrow-left-solid-full.svg" alt="Back">
+    </button>
+    <h1 data-i18n="versions.title">版本管理</h1>
+</div>
+
+<div class="page-body">
+    <div class="versions-container">
+        <div class="version-actions">
+            <button class="action-btn" onclick="switchPage('download')">
+                <span data-i18n="versions.download_new">下载新版本</span>
+            </button>
+            <button class="action-btn refresh-btn" onclick="refreshVersions()">
+                <img src="../assets/icon/arrow-rotate-left-solid-full.svg" alt="Refresh">
+            </button>
+        </div>
+
+        <div class="versions-list" id="versions-list">
+            <div class="empty-state" id="empty-state">
+                <div class="empty-state-icon">📦</div>
+                <div class="empty-state-text" data-i18n="versions.no_versions">还没有安装任何版本</div>
+                <div class="empty-state-hint" data-i18n="versions.download_hint">点击上方按钮下载一个版本开始游戏</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="rename-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" data-i18n="versions.rename_title">重命名版本</div>
+            <button class="modal-close" onclick="closeModal('rename-modal')">×</button>
+        </div>
+        <div class="modal-body">
+            <input type="text" class="modal-input" id="rename-input" placeholder="输入新版本名称">
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn cancel" onclick="closeModal('rename-modal')" data-i18n="common.cancel">取消</button>
+            <button class="modal-btn confirm" onclick="confirmRename()" data-i18n="common.confirm">确认</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="copy-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" data-i18n="versions.copy_title">复制版本</div>
+            <button class="modal-close" onclick="closeModal('copy-modal')">×</button>
+        </div>
+        <div class="modal-body">
+            <input type="text" class="modal-input" id="copy-input" placeholder="输入新版本名称">
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn cancel" onclick="closeModal('copy-modal')" data-i18n="common.cancel">取消</button>
+            <button class="modal-btn confirm" onclick="confirmCopy()" data-i18n="common.confirm">确认</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="delete-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" data-i18n="versions.delete_title">删除版本</div>
+            <button class="modal-close" onclick="closeModal('delete-modal')">×</button>
+        </div>
+        <div class="modal-body">
+            <p class="modal-text" data-i18n="versions.delete_confirm">确定要删除版本 <strong id="delete-version-name"></strong> 吗？此操作不可撤销。</p>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn cancel" onclick="closeModal('delete-modal')" data-i18n="common.cancel">取消</button>
+            <button class="modal-btn danger" onclick="confirmDelete()" data-i18n="common.delete">删除</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentVersions = [];
+let selectedVersionForAction = null;
+
+async function loadVersionsPage() {
+    await refreshVersions();
+}
+
+async function refreshVersions() {
+    try {
+        const versions = await window.simpmcAPI.getInstalledVersions();
+        currentVersions = versions;
+        renderVersions(versions);
+    } catch (error) {
+        console.error('Failed to load versions:', error);
+    }
+}
+
+function renderVersions(versions) {
+    const container = document.getElementById('versions-list');
+    const emptyState = document.getElementById('empty-state');
+    
+    if (versions.length === 0) {
+        container.innerHTML = '';
+        container.appendChild(emptyState);
+        emptyState.style.display = 'block';
+        return;
+    }
+    
+    emptyState.style.display = 'none';
+    
+    container.innerHTML = versions.map(version => {
+        const type = version.type || 'release';
+        const isIsolated = version.isolation?.enabled;
+        const installedAt = version.installedAt ? new Date(version.installedAt).toLocaleDateString() : '-';
+        
+        return `
+            <div class="version-card" data-version-id="${version.id}">
+                <div class="version-header">
+                    <div class="version-info-main">
+                        <div class="version-name">${escapeHtml(version.id)}</div>
+                        <div class="version-meta">
+                            <span class="version-type-tag ${type}">${getTypeLabel(type)}</span>
+                            ${isIsolated ? '<span class="version-isolation-tag">隔离模式</span>' : ''}
+                            <span>安装时间: ${installedAt}</span>
+                        </div>
+                    </div>
+                    <div class="version-card-actions">
+                        <button class="card-action-btn play" onclick="playVersion('${escapeHtml(version.id)}')">启动游戏</button>
+                        <button class="card-action-btn" onclick="openCopyModal('${escapeHtml(version.id)}')">复制</button>
+                        <button class="card-action-btn" onclick="openRenameModal('${escapeHtml(version.id)}')">重命名</button>
+                        <button class="card-action-btn delete" onclick="openDeleteModal('${escapeHtml(version.id)}')">删除</button>
+                    </div>
+                </div>
+                <div class="version-details">
+                    <div class="version-detail-item">
+                        <div class="detail-label">游戏目录</div>
+                        <div class="detail-value">${version.isolation?.gameDir ? escapeHtml(version.isolation.gameDir) : '-'}</div>
+                    </div>
+                    ${version.copiedFrom ? `
+                        <div class="version-detail-item">
+                            <div class="detail-label">复制自</div>
+                            <div class="detail-value">${escapeHtml(version.copiedFrom)}</div>
+                        </div>
+                    ` : ''}
+                    ${version.renamedFrom ? `
+                        <div class="version-detail-item">
+                            <div class="detail-label">原名</div>
+                            <div class="detail-value">${escapeHtml(version.renamedFrom)}</div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function getTypeLabel(type) {
+    const labels = {
+        'release': '正式版',
+        'snapshot': '快照版',
+        'april-fools': '愚人节版'
+    };
+    return labels[type] || type;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function playVersion(versionId) {
+    console.log('Playing version:', versionId);
+    alert('游戏启动功能开发中...');
+}
+
+function openRenameModal(versionId) {
+    selectedVersionForAction = versionId;
+    document.getElementById('rename-input').value = versionId;
+    openModal('rename-modal');
+    setTimeout(() => document.getElementById('rename-input').focus(), 100);
+}
+
+async function confirmRename() {
+    const newName = document.getElementById('rename-input').value.trim();
+    if (!newName) {
+        alert('请输入版本名称');
+        return;
+    }
+    if (newName === selectedVersionForAction) {
+        closeModal('rename-modal');
+        return;
+    }
+    
+    try {
+        const result = await window.simpmcAPI.renameVersion(selectedVersionForAction, newName);
+        if (result.success) {
+            closeModal('rename-modal');
+            await refreshVersions();
+        } else {
+            alert('重命名失败: ' + (result.error || '未知错误'));
+        }
+    } catch (error) {
+        alert('重命名失败: ' + error.message);
+    }
+}
+
+function openCopyModal(versionId) {
+    selectedVersionForAction = versionId;
+    document.getElementById('copy-input').value = versionId + '-copy';
+    openModal('copy-modal');
+    setTimeout(() => document.getElementById('copy-input').focus(), 100);
+}
+
+async function confirmCopy() {
+    const newName = document.getElementById('copy-input').value.trim();
+    if (!newName) {
+        alert('请输入版本名称');
+        return;
+    }
+    
+    try {
+        const result = await window.simpmcAPI.copyVersion(selectedVersionForAction, newName);
+        if (result.success) {
+            closeModal('copy-modal');
+            await refreshVersions();
+        } else {
+            alert('复制失败: ' + (result.error || '未知错误'));
+        }
+    } catch (error) {
+        alert('复制失败: ' + error.message);
+    }
+}
+
+function openDeleteModal(versionId) {
+    selectedVersionForAction = versionId;
+    document.getElementById('delete-version-name').textContent = versionId;
+    openModal('delete-modal');
+}
+
+async function confirmDelete() {
+    try {
+        const result = await window.simpmcAPI.deleteVersion(selectedVersionForAction);
+        if (result.success) {
+            closeModal('delete-modal');
+            await refreshVersions();
+        } else {
+            alert('删除失败: ' + (result.error || '未知错误'));
+        }
+    } catch (error) {
+        alert('删除失败: ' + error.message);
+    }
+}
+
+function openModal(id) {
+    document.getElementById(id).classList.add('active');
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+    selectedVersionForAction = null;
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+            modal.classList.remove('active');
+        });
+        selectedVersionForAction = null;
+    }
+});
+</script>

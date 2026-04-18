@@ -1,0 +1,179 @@
+<script src="../assets/js/skinview3d.bundle.js"></script>
+<style>
+.page-header {
+    position: relative;
+    height: 40px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    padding-left: 50px;
+}
+.page-header h1 {
+    text-align: left;
+    margin: 0;
+    line-height: 40px;
+}
+.back-btn {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+}
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.back-btn img {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+}
+.skin-preview-container {
+    display: flex;
+    gap: 30px;
+    padding: 20px 0;
+}
+.skin-3d-preview {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.skin-viewer {
+    width: 300px;
+    height: 400px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    overflow: hidden;
+}
+.skin-viewer canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+.skin-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+.skin-control-btn {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+.skin-control-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.skin-control-btn img {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+}
+.skin-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.info-section {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+}
+.info-section h3 {
+    margin: 0 0 15px 0;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+}
+.info-section input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    box-sizing: border-box;
+}
+.info-section input:focus {
+    outline: none;
+    border-color: rgba(25, 118, 210, 0.9);
+}
+.profile-select-section {
+    margin-top: auto;
+}
+.profile-select-section select {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(20, 20, 20, 0.95);
+    color: white;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+.assign-btn {
+    width: 100%;
+    padding: 14px;
+    margin-top: 10px;
+    background: rgba(25, 118, 210, 0.9);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.assign-btn:hover {
+    background: rgba(25, 118, 210, 1);
+}
+.assign-btn:disabled {
+    background: rgba(255, 255, 255, 0.1);
+    cursor: not-allowed;
+}
+</style>
+
+<div class="page-header">
+    <button class="back-btn" onclick="switchPage('wardrobe')">
+        <img src="../assets/icon/arrow-left-solid-full.svg" alt="Back">
+    </button>
+    <h1 data-i18n="wardrobe.skin_preview"></h1>
+</div>
+
+<div class="page-body">
+    <div class="skin-preview-container">
+        <div class="skin-3d-preview">
+            <div class="skin-viewer" id="skin-viewer"></div>
+        </div>
+        <div class="skin-info">
+            <div class="info-section">
+                <h3 data-i18n="wardrobe.name"></h3>
+                <input type="text" id="skin-name-input" placeholder="输入皮肤名称">
+            </div>
+            <p data-i18n="wardrobe.skin_preview_hint"></p>
+            <div class="info-section profile-select-section">
+                <h3 data-i18n="wardrobe.assign_to_profile"></h3>
+                <select id="profile-select">
+                    <option value="" data-i18n="wardrobe.select_profile"></option>
+                </select>
+                <button class="assign-btn" id="assign-btn" onclick="assignSkinToProfile()" data-i18n="wardrobe.assign"></button>
+            </div>
+        </div>
+    </div>
+</div>

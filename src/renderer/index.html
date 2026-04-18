@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title data-i18n="launcher.title"></title>
+    <script src="script.js"></script>
+    <script src="i18n.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="main-container">
+        <div class="title-bar">
+            <div class="title-content">
+                <img src="../assets/logo.svg" alt="Logo" class="title-logo">
+                <span data-i18n="launcher.title"></span>
+            </div>
+            <div class="controls">
+                <span class="btn" onclick="window.simpmcAPI.sendWindowControl('minimize')">−</span>
+                <span class="btn" onclick="window.simpmcAPI.sendWindowControl('close')">×</span>
+            </div>
+        </div>
+
+        <!-- 初始化引导 --> 
+        <div id="onboarding-container" class="onboarding-container">
+            <div id="onboarding-step-1" class="onboarding-step">
+                <div class="onboarding-content">
+                    <h1 data-i18n="onboarding.choose_language"></h1>
+                    <p data-i18n="onboarding.choose_language_desc"></p>
+                    <div class="onboarding-language-select">
+                        <div class="language-cards">
+                            <div class="language-card" data-value="zh-CN">
+                                <div class="language-flag">🇨🇳</div>
+                                <div class="language-name">中文<br>（简体）</div>
+                                <div class="language-check"><input type="radio" name="language" value="zh-CN" class="hidden-input" checked></div>
+                            </div>
+                            <div class="language-card" data-value="zh-TW">
+                                <div class="language-flag">🇨🇳</div>
+                                <div class="language-name">中文<br>（繁体）</div>
+                                <div class="language-check"><input type="radio" name="language" value="zh-TW" class="hidden-input"></div>
+                            </div>
+                            <div class="language-card" data-value="en-US">
+                                <div class="language-flag">🇺🇸</div>
+                                <div class="language-name">English</div>
+                                <div class="language-check"><input type="radio" name="language" value="en-US" class="hidden-input"></div>
+                            </div>
+                        </div>
+                    </div><br><br>
+                    <div class="onboarding-buttons">
+                        <button class="onboarding-btn primary" onclick="setWebAppLocale()" data-i18n="onboarding.confirm_language"></button>
+                        <button class="onboarding-btn secondary" onclick="onboardingNext()" data-i18n="onboarding.next"></button>
+                    </div>
+                </div>
+            </div>
+            <div id="onboarding-step-2" class="onboarding-step">
+                <div class="onboarding-content">
+                    <h1 data-i18n="onboarding.welcome"></h1>
+                    <p data-i18n="onboarding.welcome_desc"></p>
+                    <div class="onboarding-buttons">
+                        <button class="onboarding-btn primary" onclick="onboardingNext()" data-i18n="onboarding.start_setup"></button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="onboarding-step-3" class="onboarding-step">
+                <div class="onboarding-content">
+                    <h1 data-i18n="onboarding.install_minecraft"></h1>
+                    <p data-i18n="onboarding.install_minecraft_desc"></p>
+                    <div class="onboarding-buttons">
+                        <button class="onboarding-btn secondary" onclick="onboardingBack()" data-i18n="onboarding.back"></button>
+                        <button class="onboarding-btn primary" onclick="onboardingNext()" data-i18n="onboarding.next"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="onboarding-step-4" class="onboarding-step">
+                <div class="onboarding-content">
+                    <h1 data-i18n="onboarding.wardrobe_setup"></h1>
+                    <p data-i18n="onboarding.wardrobe_setup_desc"></p>
+                    <div class="onboarding-buttons">
+                        <button class="onboarding-btn secondary" onclick="onboardingBack()" data-i18n="onboarding.back"></button>
+                        <button class="onboarding-btn primary" onclick="onboardingNext()" data-i18n="onboarding.next"></button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="onboarding-step-5" class="onboarding-step">
+                <div class="onboarding-content">
+                    <h1 data-i18n="onboarding.create_character"></h1>
+                    <p data-i18n="onboarding.create_character_desc"></p>
+                    <div class="onboarding-character-select">
+                        <div class="character-card" data-value="offline">
+                            <div class="character-icon"></div>
+                            <div class="character-name" data-i18n="auth.offline_character"></div>
+                            <div class="character-check"><input type="radio" name="character" value="offline" class="hidden-input"></div>
+                        </div>
+                        <div class="character-card disabled" data-value="third_party">
+                            <div class="character-icon"></div>
+                            <div class="character-name" data-i18n="auth.third_party_character"></div>
+                            <div class="character-check"><input type="radio" name="character" value="third_party" class="hidden-input" disabled></div>
+                        </div>
+                        <div class="character-card" data-value="online">
+                            <div class="character-icon"></div>
+                            <div class="character-name" data-i18n="auth.official_character"></div>
+                            <div class="character-check"><input type="radio" name="character" value="online" class="hidden-input"></div>
+                        </div>
+                    </div>
+                    <div class="onboarding-buttons">
+                        <button class="onboarding-btn secondary" onclick="onboardingBack()" data-i18n="onboarding.back"></button>
+                        <button class="onboarding-btn primary" onclick="openCharacterCreator()" data-i18n="onboarding.next"></button>
+                        <button class="onboarding-btn secondary" onclick="onboardingNext()" data-i18n="onboarding.later"></button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="onboarding-step-6" class="onboarding-step">
+                <div class="confetti-container" id="confetti-container"></div>
+                <div class="onboarding-content">
+                    <h1 data-i18n="onboarding.setup_complete"></h1>
+                    <p data-i18n="onboarding.setup_complete_desc"></p>
+                    <div class="onboarding-buttons">
+                        <button class="onboarding-btn secondary" onclick="onboardingBack()" data-i18n="onboarding.back"></button>
+                        <button class="onboarding-btn primary" onclick="finishOnboarding()" data-i18n="onboarding.launch"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="menu-container" class="menu-container">
+            <img src="../assets/icon/house-solid-full.svg" alt="Home" class="menu-icon active" data-page="home" onclick="switchPage('home')">
+            <img src="../assets/icon/shirt-solid-full.svg" alt="Wardrobe" class="menu-icon" data-page="wardrobe" onclick="switchPage('wardrobe')">
+            <img src="../assets/icon/download-solid-full.svg" alt="Download" class="menu-icon" data-page="download" onclick="switchPage('download')">
+            <img src="../assets/icon/gear-solid-full.svg" alt="Settings" class="menu-icon" data-page="settings" onclick="switchPage('settings')">
+        </div>
+
+        <div id="page-content" class="page-content"></div>
+    </div>
+</body>
+</html>
