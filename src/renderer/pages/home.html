@@ -187,6 +187,147 @@
 .no-version-btn:hover {
     background: #1565C0;
 }
+
+.profile-selector {
+    position: fixed;
+    left: 80px;
+    bottom: 80px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 100;
+}
+
+.profile-selector-label {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    white-space: nowrap;
+}
+
+.profile-selector-wrapper {
+    position: relative;
+}
+
+.profile-selector-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.profile-selector-container:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.profile-skin-preview {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    image-rendering: pixelated;
+}
+
+.profile-selector-dropdown {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.profile-selector-name {
+    font-size: 14px;
+    color: white;
+    font-weight: 500;
+}
+
+.profile-selector-arrow {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.profile-dropdown-menu {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    margin-bottom: 8px;
+    background: rgba(50, 50, 50, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 8px 0;
+    min-width: 200px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    display: none;
+    overflow: hidden;
+}
+
+.profile-dropdown-menu.show {
+    display: block;
+}
+
+.profile-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.profile-dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.profile-dropdown-item.selected {
+    background: rgba(25, 118, 210, 0.3);
+}
+
+.profile-dropdown-item-skin {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    image-rendering: pixelated;
+    object-fit: none;
+    clip-path: inset(0 0 24px 0 round 4px);
+}
+
+.profile-dropdown-item-name {
+    font-size: 14px;
+    color: white;
+    font-weight: 500;
+}
+
+.launch-game-btn {
+    position: fixed;
+    left: 80px;
+    bottom: 20px;
+    padding: 14px 28px;
+    background: transparent;
+    border: 2px solid #1976D2;
+    border-radius: 12px;
+    color: #1976D2;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    z-index: 100;
+    text-content: center;
+}
+
+.launch-game-btn:hover {
+    background: rgba(25, 118, 210, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.2);
+}
+
+.launch-game-btn:active {
+    transform: translateY(0);
+}
 </style>
 
 <div class="page-header">
@@ -194,16 +335,25 @@
     <p id="slogan" class="slogan"></p>
 </div>
 
-<!-- <div class="home-content">
-    <div class="current-version-card" id="current-version-card">
-        <div class="current-version-header">
-            <div class="current-version-title">当前版本</div>
+<div class="profile-selector" id="profile-selector">
+    <span class="profile-selector-label" data-i18n="home.playing_as">以</span>
+    <div class="profile-selector-wrapper">
+        <div class="profile-selector-container" id="profile-selector-container" onclick="toggleProfileDropdown()">
+            <img class="profile-skin-preview" id="current-profile-skin" src="" alt="">
+            <div class="profile-selector-dropdown">
+                <span class="profile-selector-name" id="current-profile-name">-</span>
+                <span class="profile-selector-arrow">▼</span>
+            </div>
         </div>
-        <div id="version-content">
-        </div>
+        <div class="profile-dropdown-menu" id="profile-dropdown-menu"></div>
     </div>
+    <span class="profile-selector-label" data-i18n="home.playing_as_suffix"></span>
+</div>
 
-</div> -->
+<button class="launch-game-btn" id="launch-game-btn" data-i18n-text="home.launch"
+onclick="showConfirmModal('不支持', '此版本的启动器不支持此功能。');">
+    启动游戏
+</button>
 
 <script>
 let installedVersions = [];
@@ -211,61 +361,7 @@ let installedVersions = [];
 async function loadHomePage() {
     await loadInstalledVersions();
     renderCurrentVersion();
-}
-
-async function loadInstalledVersions() {
-    try {
-        installedVersions = await window.simpmcAPI.getInstalledVersions();
-    } catch (error) {
-        console.error('Failed to load versions:', error);
-        installedVersions = [];
-    }
-}
-
-function renderCurrentVersion() {
-    const container = document.getElementById('version-content');
-    
-    if (installedVersions.length === 0) {
-        container.innerHTML = `
-            <div class="no-version-state">
-                <div class="no-version-icon">🎮</div>
-                <div class="no-version-text">还没有安装任何游戏版本</div>
-                <button class="no-version-btn" onclick="switchPage('download')">下载一个版本</button>
-            </div>
-        `;
-        return;
-    }
-    
-    const version = installedVersions[0];
-    const type = version.type || 'release';
-    const isIsolated = version.isolation?.enabled;
-    
-    container.innerHTML = `
-        <div class="current-version-info">
-            <div class="current-version-name">${escapeHtml(version.id)}</div>
-            <div class="current-version-type ${type}">${getTypeLabel(type)}</div>
-            ${isIsolated ? '<div style="padding: 6px 14px; background: rgba(156, 39, 176, 0.3); border-radius: 6px; color: #CE93D8; font-size: 13px; font-weight: 500;">隔离模式</div>' : ''}
-        </div>
-        <div class="current-version-actions">
-            <button class="play-btn" onclick="playVersion('${escapeHtml(version.id)}')">
-                <span>▶</span>
-                <span>启动游戏</span>
-            </button>
-            <button class="manage-btn" onclick="switchPage('versions')">
-                <span>📦</span>
-                <span>管理版本</span>
-            </button>
-        </div>
-    `;
-}
-
-function getTypeLabel(type) {
-    const labels = {
-        'release': '正式版',
-        'snapshot': '快照版',
-        'april-fools': '愚人节版'
-    };
-    return labels[type] || type;
+    updateLaunchButton();
 }
 
 function escapeHtml(text) {

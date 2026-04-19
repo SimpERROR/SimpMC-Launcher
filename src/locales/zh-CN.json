@@ -3,6 +3,13 @@
         "title": "SimpMC 启动器",
         "launch": "启动游戏"
     },
+    "home": {
+        "launch": "启动游戏",
+        "playing_as": "以",
+        "playing_as_suffix": "的身份游玩",
+        "no_profiles": "暂无档案",
+        "create_profile": "请新建档案"
+    },
     "download": {
         "title": "下载 Minecraft",
         "select_version": "选择版本",
@@ -112,6 +119,8 @@
         "concurrent_downloads_hint": "更高的并发数下载更快，但可能导致下载失败",
         "max_retries": "最大重试次数",
         "max_retries_hint": "下载失败时自动重试的次数",
+        "personalization": "个性化",
+        "personalization_desc": "自定义启动器外观和显示设置",
         "profile_management": "管理档案",
         "profile_management_desc": "添加、编辑或删除游戏角色",
         "language": "选择语言",
@@ -119,7 +128,11 @@
         "show_guide": "重新展示引导",
         "show_guide_desc": "重新查看首次使用的设置向导",
         "display_name": "显示名称",
-        "display_name_desc": "设置主页问候语中显示的名称"
+        "display_name_desc": "设置主页问候语中显示的名称，默认为本机用户名。",
+        "background_music": "背景音乐",
+        "music_enabled": "音乐开关",
+        "no_music_playing": "暂无音乐播放",
+        "music_hint": "音乐文件应放置在 SimpMC/music 目录下。\n在启动器内按下 Ctrl 并滚动滚轮可快速调整音量。"
     },
     "profile": {
         "title": "管理档案",
@@ -171,5 +184,13 @@
         "copy_title": "复制版本",
         "delete_title": "删除版本",
         "delete_confirm": "确定要删除版本 {version} 吗？此操作不可撤销。"
+    },
+    "music": {
+        "song_name": "歌曲名称",
+        "now_playing": "当前播放",
+        "float_window": "音乐浮窗",
+        "float_window_disabled": "音乐浮窗 功能未开启。",
+        "volume": "音量",
+        "no_music_playing": "暂无音乐播放"
     }
 }

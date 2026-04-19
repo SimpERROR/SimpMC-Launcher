@@ -190,7 +190,7 @@
 </div>
 <div class="page-body">
     <div class="settings-section">
-        <div class="settings-card" onclick="openDownloadSettingsModal()">
+        <div class="settings-card" onclick="switchPage('download-settings')">
             <div class="settings-card-icon">
                 <img src="../assets/icon/download-solid-full.svg" alt="">
             </div>
@@ -200,13 +200,13 @@
             </div>
         </div>
 
-        <div class="settings-card" onclick="openDisplayNameModal()">
+        <div class="settings-card" onclick="switchPage('personalization')">
             <div class="settings-card-icon">
-                <img src="../assets/icon/display-solid-full.svg" alt="">
+                <img src="../assets/icon/palette-solid-full.svg" alt="">
             </div>
             <div class="settings-card-content">
-                <h3 data-i18n="settings.display_name"></h3>
-                <p data-i18n="settings.display_name_desc"></p>
+                <h3 data-i18n="settings.personalization">个性化</h3>
+                <p data-i18n="settings.personalization_desc">自定义启动器外观和显示设置</p>
             </div>
         </div>
 
@@ -238,60 +238,6 @@
                 <h3 data-i18n="settings.show_guide"></h3>
                 <p data-i18n="settings.show_guide_desc"></p>
             </div>
-        </div>
-    </div>
-</div>
-
-<div id="display-name-modal" class="modal-overlay hidden">
-    <div class="modal-content">
-        <div class="modal-title" data-i18n="settings.display_name"></div>
-        <input type="text" class="modal-input" id="display-name-input" maxlength="20">
-        <div class="modal-buttons">
-            <button class="modal-btn cancel" onclick="closeDisplayNameModal()" data-i18n="common.cancel"></button>
-            <button class="modal-btn confirm" onclick="saveDisplayName()" data-i18n="common.confirm"></button>
-        </div>
-    </div>
-</div>
-
-<div id="download-settings-modal" class="modal-overlay hidden">
-    <div class="modal-content">
-        <div class="modal-title" data-i18n="settings.download_settings">下载设置</div>
-        
-        <label class="modal-label" data-i18n="settings.install_path">游戏安装目录</label>
-        <div class="modal-row">
-            <input type="text" class="modal-input" id="install-path-input-settings" readonly>
-            <button class="modal-btn secondary" onclick="selectInstallPathSettings()">浏览</button>
-        </div>
-        <p class="modal-hint" data-i18n="settings.install_path_hint">Minecraft 版本和资源文件将安装到此目录</p>
-        
-        <label class="modal-label" data-i18n="settings.download_source">默认下载源</label>
-        <select class="modal-select" id="download-source-select">
-            <option value="official">官方源</option>
-            <option value="bmclapi">BMCLAPI 源</option>
-        </select>
-        <p class="modal-hint" data-i18n="settings.download_source_hint">BMCLAPI 源在国内下载速度更快</p>
-        
-        <label class="modal-label" data-i18n="settings.concurrent_downloads">并发下载数</label>
-        <select class="modal-select" id="concurrent-downloads-select">
-            <option value="1">1 (最慢)</option>
-            <option value="2">2 (推荐)</option>
-            <option value="3">3 (较快)</option>
-            <option value="4">4 (最快)</option>
-        </select>
-        <p class="modal-hint" data-i18n="settings.concurrent_downloads_hint">更高的并发数下载更快，但可能导致下载失败</p>
-        
-        <label class="modal-label" data-i18n="settings.max_retries">最大重试次数</label>
-        <select class="modal-select" id="max-retries-select">
-            <option value="1">1 次</option>
-            <option value="3">3 次</option>
-            <option value="5">5 次 (推荐)</option>
-            <option value="10">10 次</option>
-        </select>
-        <p class="modal-hint" data-i18n="settings.max_retries_hint">下载失败时自动重试的次数</p>
-        
-        <div class="modal-buttons">
-            <button class="modal-btn cancel" onclick="closeDownloadSettingsModal()" data-i18n="common.cancel">取消</button>
-            <button class="modal-btn confirm" onclick="saveDownloadSettings()" data-i18n="common.confirm">保存</button>
         </div>
     </div>
 </div>

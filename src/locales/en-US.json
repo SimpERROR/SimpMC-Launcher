@@ -3,6 +3,13 @@
         "title": "SimpMC Launcher",
         "launch": "Launch Game"
     },
+    "home": {
+        "launch": "Launch Game",
+        "playing_as": "Playing as",
+        "playing_as_suffix": "",
+        "no_profiles": "No profiles",
+        "create_profile": "Please create a profile"
+    },
     "download": {
         "title": "Download Minecraft",
         "select_version": "Select Version",
@@ -102,6 +109,10 @@
     },
     "settings": {
         "title": "Settings",
+        "download_settings": "Download Settings",
+        "download_settings_desc": "Manage game installation directory, download concurrency, and max retries",
+        "personalization": "Personalization",
+        "personalization_desc": "Customize launcher appearance and display settings",
         "profile_management": "Profile Management",
         "profile_management_desc": "Add, edit, or delete game profiles",
         "language": "Language",
@@ -109,9 +120,11 @@
         "show_guide": "Show Guide",
         "show_guide_desc": "View the setup guide again",
         "display_name": "Display Name",
-        "display_name_desc": "Set the name shown in the home greeting",
-        "download_settings": "Download Settings",
-        "download_settings_desc": "Manage game installation directory, download concurrency, and max retries",
+        "display_name_desc": "Set the name shown in the home greeting, default is the local username.",
+        "background_music": "Background Music",
+        "music_enabled": "Music Toggle",
+        "no_music_playing": "No music playing",
+        "music_hint": "Place music files in the SimpMC/music directory.\nIn the launcher, press Ctrl + scroll wheel to adjust the volume quickly.",
         "install_path": "Installation Path",
         "install_path_hint": "Minecraft versions and resources will be installed in this directory",
         "download_source": "Default Download Source",
@@ -161,5 +174,23 @@
         "delete": "Delete",
         "edit": "Edit",
         "save": "Save"
+    },
+    "versions": {
+        "title": "Version Management",
+        "download_new": "Download New Version",
+        "no_versions": "No versions installed yet",
+        "download_hint": "Click the button above to download a version and start playing",
+        "rename_title": "Rename Version",
+        "copy_title": "Copy Version",
+        "delete_title": "Delete Version",
+        "delete_confirm": "Are you sure you want to delete version {version}? This action cannot be undone."
+    },
+    "music": {
+        "song_name": "Song Name",
+        "now_playing": "Now Playing",
+        "float_window": "Music Floating Window",
+        "float_window_disabled": "Music floating window feature is disabled.",
+        "volume": "Volume",
+        "no_music_playing": "No music playing"
     }
 }

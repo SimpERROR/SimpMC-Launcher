@@ -254,6 +254,113 @@ async function initApp() {
             onboardingNext();
         }
     });
+    
+    // 监听音乐结束事件，用于显示歌曲切换指示器并播放音乐
+    window.simpmcAPI.onMusicEnded((event, data) => {
+        console.log('[Music] Received music_ended event in renderer');
+        
+        if (data && data.filePath) {
+            const songName = data.filePath.split(/[\\/]/).pop();
+            // 去除文件扩展名
+            const songNameWithoutExt = songName.replace(/\.[^/.]+$/, "");
+            console.log('[Music] Song name:', songNameWithoutExt);
+            showSongIndicator(songNameWithoutExt, data.total || 0);
+            
+            // 传递 totalSongs 参数给 playAudioFile
+            playAudioFile(data.filePath, data.total);
+        }
+    });
+    
+    console.log('[Music] Event listener registered');
+    
+    // 初始化完成后，如果音乐开关是开启的，请求播放音乐
+    setTimeout(async () => {
+        const settings = await window.simpmcAPI.getMusicSettings();
+        if (settings.enabled) {
+            console.log('[Music] Auto-playing music on init');
+            await window.simpmcAPI.requestPlayMusic();
+        }
+    }, 500);
+}
+
+// 音乐播放器
+let audioPlayer = null;
+let currentTotalSongs = 0;
+let currentPlayingSong = ''; // 保存当前播放的歌曲名称
+
+async function playAudioFile(filePath, totalSongs = 1) {
+    try {
+        const settings = await window.simpmcAPI.getMusicSettings();
+        
+        // 更新总歌曲数
+        if (totalSongs > 0) {
+            currentTotalSongs = totalSongs;
+        }
+        
+        if (!settings.enabled) {
+            console.log('[Music] Music is disabled');
+            return;
+        }
+        
+        // 显示歌曲指示器
+        const songName = filePath.split(/[\\/]/).pop();
+        // 去除文件扩展名
+        const songNameWithoutExt = songName.replace(/\.[^/.]+$/, "");
+        currentPlayingSong = songNameWithoutExt; // 保存当前歌曲名称
+        showSongIndicator(songNameWithoutExt, currentTotalSongs);
+        updatePersonalizationMusicInfo(songNameWithoutExt); // 更新个性化页面的音乐信息
+        updateMusicFloatInfo(); // 更新音乐浮窗的歌曲信息
+        
+        if (!audioPlayer) {
+            audioPlayer = new Audio();
+            audioPlayer.addEventListener('ended', async () => {
+                console.log('[Music] Track ended');
+                await window.simpmcAPI.skipToNextMusic();
+            });
+            audioPlayer.addEventListener('canplaythrough', () => {
+                console.log('[Music] Audio can play through');
+            });
+            audioPlayer.addEventListener('loadedmetadata', () => {
+                console.log('[Music] Audio loaded metadata, duration:', audioPlayer.duration);
+            });
+            audioPlayer.addEventListener('play', () => {
+                console.log('[Music] Audio started playing');
+                updatePlayPauseButton();
+            });
+            audioPlayer.addEventListener('pause', () => {
+                console.log('[Music] Audio paused');
+                updatePlayPauseButton();
+            });
+            audioPlayer.addEventListener('error', (e) => {
+                console.error('[Music] Audio error:', e);
+                console.error('[Music] Error code:', audioPlayer.error?.code);
+                console.error('[Music] Error message:', audioPlayer.error?.message);
+            });
+        }
+        
+        audioPlayer.volume = settings.volume;
+        console.log('[Music] Volume set to:', settings.volume);
+        
+        // 通过 Node.js 读取文件并转换为 base64 URL，避免中文路径问题
+        const dataUrl = await window.simpmcAPI.readAudioFile(filePath);
+        if (!dataUrl) {
+            console.error('[Music] Failed to read audio file - dataUrl is null');
+            return;
+        }
+        
+        console.log('[Music] Data URL received, length:', dataUrl.length);
+        audioPlayer.src = dataUrl;
+        
+        console.log('[Music] Calling play()');
+        try {
+            await audioPlayer.play();
+            console.log('[Music] Play promise resolved successfully');
+        } catch (playError) {
+            console.error('[Music] Play promise rejected:', playError);
+        }
+    } catch (error) {
+        console.error('[Music] Failed to play audio:', error);
+    }
 }
 
 // 生成彩带效果
@@ -437,6 +544,7 @@ async function switchPage(pageName) {
             if (window.loadHomePage) {
                 loadHomePage();
             }
+            loadProfilesForHomePage();
         } else if (pageName === 'profiles') {
             loadProfiles();
         } else if (pageName === 'wardrobe') {
@@ -451,6 +559,10 @@ async function switchPage(pageName) {
             }
         } else if (pageName === 'settings') {
             // 加载设置页面不需要额外操作
+        } else if (pageName === 'download-settings') {
+            loadDownloadSettingsPage();
+        } else if (pageName === 'personalization') {
+            loadPersonalizationPage();
         }
     } catch (error) {
         console.error('Error loading page:', error);
@@ -461,16 +573,13 @@ async function switchPage(pageName) {
 }
 
 // 下载设置相关函数
-async function openDownloadSettingsModal() {
-    const modal = document.getElementById('download-settings-modal');
-    modal.classList.remove('hidden');
-    
+async function loadDownloadSettingsPage() {
     try {
         const installPath = await window.simpmcAPI.getInstallPath();
         const downloadSource = await window.simpmcAPI.getDownloadSource();
         const settings = await window.simpmcAPI.getDownloadSettings();
         
-        document.getElementById('install-path-input-settings').value = installPath;
+        document.getElementById('install-path-input').value = installPath;
         document.getElementById('download-source-select').value = downloadSource;
         document.getElementById('concurrent-downloads-select').value = settings.concurrentDownloads || 2;
         document.getElementById('max-retries-select').value = settings.maxRetries || 5;
@@ -479,15 +588,12 @@ async function openDownloadSettingsModal() {
     }
 }
 
-function closeDownloadSettingsModal() {
-    document.getElementById('download-settings-modal').classList.add('hidden');
-}
-
-async function selectInstallPathSettings() {
+async function selectInstallPath() {
     try {
         const newPath = await window.simpmcAPI.selectInstallDirectory();
         if (newPath) {
-            document.getElementById('install-path-input-settings').value = newPath;
+            document.getElementById('install-path-input').value = newPath;
+            await saveDownloadSettings();
         }
     } catch (error) {
         console.error('Failed to select install path:', error);
@@ -496,7 +602,7 @@ async function selectInstallPathSettings() {
 
 async function saveDownloadSettings() {
     try {
-        const installPath = document.getElementById('install-path-input-settings').value;
+        const installPath = document.getElementById('install-path-input').value;
         const downloadSource = document.getElementById('download-source-select').value;
         const concurrentDownloads = parseInt(document.getElementById('concurrent-downloads-select').value);
         const maxRetries = parseInt(document.getElementById('max-retries-select').value);
@@ -508,10 +614,207 @@ async function saveDownloadSettings() {
             maxRetries
         });
         
-        closeDownloadSettingsModal();
+        showSaveStatus('设置已保存');
     } catch (error) {
         console.error('Failed to save download settings:', error);
-        alert('保存设置失败：' + error.message);
+        showSaveStatus('保存失败：' + error.message, true);
+    }
+}
+
+function showSaveStatus(message, isError = false) {
+    const saveStatus = document.getElementById('save-status');
+    const saveMessage = document.getElementById('save-message');
+    
+    if (saveStatus && saveMessage) {
+        saveMessage.textContent = message;
+        saveStatus.className = 'save-status';
+        if (isError) {
+            saveStatus.classList.add('error');
+        }
+        
+        saveStatus.classList.add('show');
+        
+        setTimeout(() => {
+            saveStatus.classList.remove('show');
+        }, 3000);
+    }
+}
+
+async function loadPersonalizationPage() {
+    try {
+        const displayName = await window.simpmcAPI.getDisplayName();
+        const displayNameInput = document.getElementById('display-name-input');
+        if (displayNameInput) {
+            displayNameInput.value = displayName || '';
+        }
+        
+        const musicSettings = await window.simpmcAPI.getMusicSettings();
+        const musicToggle = document.getElementById('music-toggle');
+        const volumeSlider = document.getElementById('volume-slider');
+        
+        if (musicToggle) {
+            if (musicSettings.enabled) {
+                musicToggle.classList.add('active');
+            } else {
+                musicToggle.classList.remove('active');
+            }
+        }
+        
+        if (volumeSlider) {
+            volumeSlider.value = Math.round(musicSettings.volume * 100);
+        }
+        
+        // 更新当前播放的音乐信息
+        if (currentPlayingSong) {
+            updatePersonalizationMusicInfo(currentPlayingSong);
+        }
+    } catch (error) {
+        console.error('Failed to load personalization settings:', error);
+    }
+}
+
+async function saveDisplayName() {
+    try {
+        const displayNameInput = document.getElementById('display-name-input');
+        if (displayNameInput) {
+            const displayName = displayNameInput.value;
+            await window.simpmcAPI.setDisplayName(displayName);
+            showSaveStatus('设置已保存');
+        }
+    } catch (error) {
+        console.error('Failed to save display name:', error);
+        showSaveStatus('保存失败：' + error.message, true);
+    }
+}
+
+async function toggleMusic() {
+    try {
+        const newState = await window.simpmcAPI.toggleMusic();
+        const musicToggle = document.getElementById('music-toggle');
+        if (musicToggle) {
+            if (newState) {
+                musicToggle.classList.add('active');
+                // 如果开启音乐，立即播放
+                if (audioPlayer) {
+                    audioPlayer.play().catch(err => console.error('[Music] Play error:', err));
+                } else {
+                    // 触发一次播放
+                    window.simpmcAPI.skipToNextMusic();
+                }
+            } else {
+                musicToggle.classList.remove('active');
+                // 如果关闭音乐，停止播放
+                if (audioPlayer) {
+                    audioPlayer.pause();
+                    audioPlayer.currentTime = 0;
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Failed to toggle music:', error);
+    }
+}
+
+// 音量指示器的定时器ID
+let volumeIndicatorTimeout = null;
+
+function showVolumeIndicator(volumePercent) {
+    const indicator = document.getElementById('volume-indicator');
+    const fill = document.getElementById('volume-indicator-fill');
+    const percent = document.getElementById('volume-indicator-percent');
+    
+    if (indicator && fill && percent) {
+        // 清除之前的定时器，避免闪烁
+        if (volumeIndicatorTimeout) {
+            clearTimeout(volumeIndicatorTimeout);
+        }
+        
+        // 更新显示
+        fill.style.width = `${volumePercent}%`;
+        percent.textContent = `${volumePercent}%`;
+        indicator.classList.add('show');
+        
+        // 设置新的定时器
+        volumeIndicatorTimeout = setTimeout(() => {
+            indicator.classList.remove('show');
+        }, 2000);
+    }
+}
+
+function showSongIndicator(songName, totalSongs) {
+    const indicator = document.getElementById('song-indicator');
+    const title = document.getElementById('song-indicator-title');
+    const info = document.getElementById('song-indicator-info');
+    const nextBtn = document.getElementById('song-indicator-next');
+    
+    if (indicator && title && info) {
+        // 临时移除 data-i18n 属性，防止被翻译库重置
+        const titleI18n = title.getAttribute('data-i18n');
+        title.removeAttribute('data-i18n');
+        
+        // 清除之前的滚动类
+        title.classList.remove('marquee');
+        title.textContent = songName;
+        info.textContent = i18n('music.now_playing');
+        
+        // 检查歌曲名称是否过长需要滚动
+        setTimeout(() => {
+            if (title.scrollWidth > title.parentElement.clientWidth) {
+                // 如果文本溢出，启用滚动
+                title.classList.add('marquee');
+                // 复制文本以创建无缝滚动
+                title.textContent = songName + '    ' + songName;
+            }
+        }, 100);
+        
+        // 始终显示下一首按钮（由调用者决定是否可见）
+        if (totalSongs > 1) {
+            nextBtn.style.display = 'flex';
+        } else {
+            nextBtn.style.display = 'none';
+        }
+        
+        indicator.classList.add('show');
+        
+        // 显示8秒后隐藏（足够看完歌曲名并点击下一首）
+        setTimeout(() => {
+            indicator.classList.remove('show');
+            // 恢复 data-i18n 属性
+            if (titleI18n) {
+                title.setAttribute('data-i18n', titleI18n);
+            }
+        }, 8000);
+    }
+}
+
+// 更新个性化页面中的当前播放音乐信息
+function updatePersonalizationMusicInfo(songName) {
+    const musicInfoText = document.getElementById('music-info-text');
+    if (musicInfoText) {
+        musicInfoText.textContent = songName;
+        musicInfoText.classList.add('playing');
+    }
+}
+
+async function setMusicVolume(volumePercent) {
+    try {
+        const volumeValue = Math.max(0, Math.min(100, parseInt(volumePercent) || 0));
+        const volume = volumeValue / 100;
+        await window.simpmcAPI.setMusicVolume(volume);
+        if (audioPlayer) {
+            audioPlayer.volume = volume;
+        }
+        showVolumeIndicator(volumeValue);
+    } catch (error) {
+        console.error('Failed to set music volume:', error);
+    }
+}
+
+async function skipToNextMusic() {
+    try {
+        await window.simpmcAPI.skipToNextMusic();
+    } catch (error) {
+        console.error('Failed to skip to next music:', error);
     }
 }
 
@@ -873,6 +1176,200 @@ function resetSkinRotation() {
     }
 }
 
+// 音乐浮窗相关函数
+async function openMusicFloat() {
+    const settings = await window.simpmcAPI.getMusicSettings();
+    if (!settings.enabled) {
+        // 显示音乐功能未开启的提示
+        const hint = document.getElementById('music-float-hint');
+        if (hint) {
+            hint.classList.add('show');
+            setTimeout(() => {
+                hint.classList.remove('show');
+            }, 3000);
+        }
+        return;
+    }
+    
+    // 显示浮窗
+    const overlay = document.getElementById('music-float-overlay');
+    const floatWindow = document.getElementById('music-float');
+    const mainContainer = document.querySelector('.main-container');
+    
+    if (overlay && floatWindow && mainContainer) {
+        overlay.classList.add('show');
+        floatWindow.classList.add('show');
+        mainContainer.classList.add('sink');
+        
+        // 更新浮窗中的歌曲信息
+        updateMusicFloatInfo();
+        
+        // 更新播放/暂停按钮状态
+        updatePlayPauseButton();
+        
+        // 更新音量滑块
+        const volumeSlider = document.getElementById('music-float-volume-slider');
+        if (volumeSlider) {
+            volumeSlider.value = Math.round(settings.volume * 100);
+        }
+    }
+}
+
+function closeMusicFloat() {
+    const overlay = document.getElementById('music-float-overlay');
+    const floatWindow = document.getElementById('music-float');
+    const mainContainer = document.querySelector('.main-container');
+    
+    if (overlay && floatWindow && mainContainer) {
+        overlay.classList.remove('show');
+        floatWindow.classList.remove('show');
+        mainContainer.classList.remove('sink');
+    }
+}
+
+// 音乐浮窗滚动控制
+let musicFloatScrollInterval = null;
+
+function updateMusicFloatInfo() {
+    const songTitle = document.getElementById('music-float-song-title');
+    const songInfo = document.getElementById('music-float-song-info');
+    
+    if (songTitle && songInfo) {
+        if (currentPlayingSong) {
+            songTitle.textContent = currentPlayingSong;
+            songInfo.textContent = i18n('music.now_playing');
+            
+            // 停止之前的滚动
+            stopMusicFloatScroll();
+            
+            // 检测歌曲名称是否过长，需要滚动
+            setTimeout(() => {
+                const container = songTitle.parentElement;
+                if (songTitle.scrollWidth > container.clientWidth) {
+                    startMusicFloatScroll(songTitle, container);
+                }
+            }, 100);
+        } else {
+            songTitle.textContent = i18n('music.no_music_playing');
+            songInfo.textContent = '';
+            stopMusicFloatScroll();
+        }
+    }
+}
+
+function startMusicFloatScroll(element, container) {
+    // 重置位置
+    element.style.transform = 'translateX(0)';
+    
+    let position = 0;
+    const speed = 1;
+    
+    musicFloatScrollInterval = setInterval(() => {
+        position -= speed;
+        
+        // 当元素完全滚动出容器时，重置位置
+        if (position < -element.offsetWidth) {
+            position = container.offsetWidth;
+        }
+        
+        element.style.transform = `translateX(${position}px)`;
+    }, 30);
+}
+
+function stopMusicFloatScroll() {
+    if (musicFloatScrollInterval) {
+        clearInterval(musicFloatScrollInterval);
+        musicFloatScrollInterval = null;
+    }
+    
+    const songTitle = document.getElementById('music-float-song-title');
+    if (songTitle) {
+        songTitle.style.transform = 'translateX(0)';
+    }
+}
+
+function updatePlayPauseButton() {
+    const button = document.getElementById('music-float-play-pause');
+    const icon = document.getElementById('music-float-play-pause-icon');
+    
+    if (button && icon) {
+        if (audioPlayer && !audioPlayer.paused) {
+            // 正在播放，显示暂停图标
+            icon.src = '../assets/icon/pause-solid-full.svg';
+            icon.alt = 'Pause';
+        } else {
+            // 已暂停，显示播放图标
+            icon.src = '../assets/icon/play-solid-full.svg';
+            icon.alt = 'Play';
+        }
+    }
+}
+
+async function togglePlayPause() {
+    if (!audioPlayer) {
+        // 如果没有音频播放器，尝试播放音乐
+        await window.simpmcAPI.requestPlayMusic();
+        return;
+    }
+    
+    if (audioPlayer.paused) {
+        // 播放
+        try {
+            await audioPlayer.play();
+        } catch (error) {
+            console.error('[Music] Play error:', error);
+        }
+    } else {
+        // 暂停
+        audioPlayer.pause();
+    }
+    
+    // 更新按钮状态
+    updatePlayPauseButton();
+}
+
+// 监听键盘快捷键
+function setupKeyboardShortcuts() {
+    document.addEventListener('keydown', (event) => {
+        // Ctrl+M 打开音乐浮窗
+        if (event.ctrlKey && event.key === 'm') {
+            event.preventDefault();
+            openMusicFloat();
+        }
+    });
+    
+    // 点击遮罩层关闭浮窗
+    const overlay = document.getElementById('music-float-overlay');
+    if (overlay) {
+        overlay.addEventListener('click', closeMusicFloat);
+    }
+    
+    // 防止浮窗内点击事件冒泡到遮罩层
+    const floatWindow = document.getElementById('music-float');
+    if (floatWindow) {
+        floatWindow.addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+    }
+}
+
+// 初始化音乐浮窗
+function initMusicFloat() {
+    setupKeyboardShortcuts();
+    
+    // 监听音频状态变化
+    if (audioPlayer) {
+        audioPlayer.addEventListener('play', updatePlayPauseButton);
+        audioPlayer.addEventListener('pause', updatePlayPauseButton);
+        audioPlayer.addEventListener('ended', updatePlayPauseButton);
+    }
+}
+
+// 在应用初始化时设置音乐浮窗
+if (typeof window !== 'undefined') {
+    window.addEventListener('DOMContentLoaded', initMusicFloat);
+}
+
 async function loadProfilesForAssignment() {
     try {
         const data = await window.simpmcAPI.getProfiles();
@@ -959,35 +1456,6 @@ async function selectLanguage(locale) {
         document.getElementById(`card-${locale}`)?.classList.add('active');
     } catch (error) {
         console.error('Failed to change language:', error);
-    }
-}
-
-async function openDisplayNameModal() {
-    const modal = document.getElementById('display-name-modal');
-    const input = document.getElementById('display-name-input');
-    if (!modal || !input) return;
-    
-    const currentName = await window.simpmcAPI.getDisplayName();
-    const systemUsername = await window.simpmcAPI.getSystemUsername();
-    input.value = currentName || systemUsername || '';
-    
-    modal.classList.remove('hidden');
-}
-
-function closeDisplayNameModal() {
-    document.getElementById('display-name-modal').classList.add('hidden');
-}
-
-async function saveDisplayName() {
-    const input = document.getElementById('display-name-input');
-    if (!input) return;
-    
-    const name = input.value.trim();
-    await window.simpmcAPI.setDisplayName(name || null);
-    closeDisplayNameModal();
-    
-    if (currentPage === 'home') {
-        updateGreeting();
     }
 }
 
@@ -1381,3 +1849,225 @@ function formatBytes(bytes) {
 }
 
 window.addEventListener('DOMContentLoaded', initApp);
+
+document.addEventListener('wheel', async function(e) {
+    if (e.ctrlKey) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -5 : 5;
+        
+        // 获取当前音量：先尝试从 store 获取，如果失败则使用滑块值
+        let currentVolume = 50;
+        const volumeSlider = document.getElementById('volume-slider');
+        if (volumeSlider) {
+            currentVolume = parseInt(volumeSlider.value) || 50;
+        } else {
+            // 不在个性化页面时，从 store 获取当前音量
+            try {
+                const musicSettings = await window.simpmcAPI.getMusicSettings();
+                currentVolume = Math.round(musicSettings.volume * 100);
+            } catch (error) {
+                console.error('Failed to get music settings:', error);
+            }
+        }
+        
+        const newVolume = Math.max(0, Math.min(100, currentVolume + delta));
+        
+        // 无论是否在个性化页面，都调节音量并显示指示器
+        setMusicVolume(newVolume);
+        
+        // 如果在个性化页面，更新滑块值
+        if (volumeSlider) {
+            volumeSlider.value = newVolume;
+        }
+    }
+}, { passive: false });
+
+function showConfirmModal(title, content, color = 'blue') {
+    let overlay = document.getElementById('confirm-modal-overlay');
+    
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'confirm-modal-overlay';
+        overlay.className = 'modal-overlay';
+        overlay.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="confirm-modal-title"></h3>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-text" id="confirm-modal-text"></p>
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn" id="confirm-modal-btn" onclick="closeConfirmModal()"></button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) {
+                closeConfirmModal();
+            }
+        });
+    }
+    
+    const titleEl = document.getElementById('confirm-modal-title');
+    const textEl = document.getElementById('confirm-modal-text');
+    const btnEl = document.getElementById('confirm-modal-btn');
+    
+    if (titleEl) titleEl.textContent = title;
+    if (textEl) textEl.textContent = content;
+    
+    if (btnEl) {
+        btnEl.textContent = i18n('common.confirm') || '确认';
+        btnEl.className = 'modal-btn modal-btn-' + color;
+    }
+    
+    if (overlay) {
+        overlay.classList.add('show');
+    }
+}
+
+function closeConfirmModal() {
+    const overlay = document.getElementById('confirm-modal-overlay');
+    if (overlay) {
+        overlay.classList.remove('show');
+    }
+}
+
+let selectedProfileId = null;
+
+async function loadProfilesForHomePage() {
+    try {
+        const data = await window.simpmcAPI.getProfiles();
+        cachedProfiles = data.profiles || [];
+
+        try {
+            const wardrobeData = await window.simpmcAPI.getWardrobe();
+            cachedWardrobe = wardrobeData;
+        } catch (error) {
+            console.error('Failed to load wardrobe:', error);
+            cachedWardrobe = { skins: [], capes: [] };
+        }
+
+        renderProfileSelector();
+    } catch (error) {
+        console.error('Failed to load profiles:', error);
+        cachedProfiles = [];
+    }
+}
+
+function getSkinPreviewUrl(skinId) {
+    if (!skinId) return '';
+
+    if (skinId === 'steve') {
+        return '../assets/icon/steve.png';
+    } else if (skinId === 'alex') {
+        return '../assets/icon/alex.png';
+    }
+
+    const allSkins = (cachedWardrobe && cachedWardrobe.skins) || [];
+    const skin = allSkins.find(s => s.id === skinId);
+    if (skin) {
+        if (skin.filePath) {
+            return `file://${skin.filePath}`;
+        }
+        if (skin.isDefault) {
+            if (skin.id === 'steve') return '../assets/icon/steve.png';
+            if (skin.id === 'alex') return '../assets/icon/alex.png';
+        }
+    }
+
+    return '';
+}
+
+function renderProfileSelector() {
+    const menu = document.getElementById('profile-dropdown-menu');
+    const currentSkin = document.getElementById('current-profile-skin');
+    const currentName = document.getElementById('current-profile-name');
+
+    if (!menu) return;
+
+    if (cachedProfiles.length === 0) {
+        const createText = i18n('home.create_profile') || '请新建档案';
+        menu.innerHTML = `<div class="profile-dropdown-item" onclick="switchPage('wardrobe')">
+            <span class="profile-dropdown-item-name">${createText}</span>
+        </div>`;
+        if (currentName) currentName.textContent = createText;
+        if (currentSkin) currentSkin.src = '';
+        selectedProfileId = null;
+        return;
+    }
+
+    if (!selectedProfileId && cachedProfiles.length > 0) {
+        selectedProfileId = cachedProfiles[0].id;
+    }
+
+    const selectedProfile = cachedProfiles.find(p => p.id === selectedProfileId);
+
+    if (currentName) currentName.textContent = selectedProfile ? selectedProfile.name : '-';
+    if (currentSkin) {
+        const skinUrl = selectedProfile ? getSkinPreviewUrl(selectedProfile.skinId) : '';
+        console.log('renderProfileSelector - profile:', selectedProfile, 'skinUrl:', skinUrl, 'skinId:', selectedProfile?.skinId);
+        currentSkin.src = skinUrl;
+    }
+
+    menu.innerHTML = cachedProfiles.map(profile => {
+        const isSelected = profile.id === selectedProfileId;
+        const skinUrl = getSkinPreviewUrl(profile.skinId);
+        console.log('Rendering profile:', profile.name, 'skinId:', profile.skinId, 'skinUrl:', skinUrl);
+        return `
+            <div class="profile-dropdown-item ${isSelected ? 'selected' : ''}"
+                 onclick="selectProfile('${profile.id}', '${profile.name.replace(/'/g, "\\'")}', '${skinUrl}')">
+                <img class="profile-dropdown-item-skin" src="${skinUrl}" alt=""
+                     onerror="this.style.display='none'">
+                <span class="profile-dropdown-item-name">${profile.name}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+function selectProfile(profileId, profileName, skinUrl) {
+    console.log('selectProfile called:', { profileId, profileName, skinUrl });
+    selectedProfileId = profileId;
+    const currentName = document.getElementById('current-profile-name');
+    const currentSkin = document.getElementById('current-profile-skin');
+
+    if (currentName) currentName.textContent = profileName;
+    if (currentSkin) {
+        console.log('Setting currentSkin.src to:', skinUrl);
+        currentSkin.src = skinUrl;
+    }
+
+    document.querySelectorAll('.profile-dropdown-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    event.currentTarget.classList.add('selected');
+
+    toggleProfileDropdown();
+}
+
+function toggleProfileDropdown() {
+    const menu = document.getElementById('profile-dropdown-menu');
+    if (menu) {
+        menu.classList.toggle('show');
+    }
+}
+
+document.addEventListener('click', function(e) {
+    const selector = document.getElementById('profile-selector-container');
+    const menu = document.getElementById('profile-dropdown-menu');
+    if (selector && menu && !selector.contains(e.target) && !menu.contains(e.target)) {
+        menu.classList.remove('show');
+    }
+});
+
+function updateLaunchButton() {
+    const launchBtn = document.getElementById('launch-game-btn');
+    if (launchBtn) {
+        const text = i18n('home.launch');
+        if (text && text !== 'home.launch') {
+            launchBtn.textContent = text;
+        }
+    }
+}

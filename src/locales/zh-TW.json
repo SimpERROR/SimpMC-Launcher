@@ -109,7 +109,7 @@
         "show_guide": "重新展示引導",
         "show_guide_desc": "重新查看首次使用的設定嚮導",
         "display_name": "顯示名稱",
-        "display_name_desc": "設定主頁問候語中顯示的名稱",
+        "display_name_desc": "設定主頁問候語中顯示的名稱，默認為本機用戶名。",
         "download_settings": "下載設定",
         "download_settings_desc": "管理安裝目錄、下載并发數等",
         "install_path": "安裝目錄",
@@ -119,7 +119,13 @@
         "concurrent_downloads": "下載并发數",
         "concurrent_downloads_hint": "更高的并发數下載更快，但可能导致下載失败",
         "max_retries": "最大重試次数",
-        "max_retries_hint": "下載失敗時自動重試的次数"
+        "max_retries_hint": "下載失敗時自動重試的次数",
+        "personalization": "个性化",
+        "personalization_desc": "自定義啟動器外觀和顯示設定",
+        "background_music": "背景音樂",
+        "music_enabled": "音樂開關",
+        "no_music_playing": "暫無音樂播放",
+        "music_hint": "音樂文件應放置在 SimpMC/music 目錄下。\n在啟動器內按下 Ctrl 并滾動滾輪可快速調整音量。"
     },
     "profile": {
         "title": "管理檔案",
@@ -161,5 +167,9 @@
         "delete": "刪除",
         "edit": "編輯",
         "save": "儲存"
+    },
+    "music": {
+        "song_name": "歌曲名稱",
+        "now_playing": "當前播放"
     }
 }

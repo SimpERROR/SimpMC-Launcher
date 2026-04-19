@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- 背景容器，用于实现毛玻璃效果 -->
+    <div class="background-container"></div>
     <div class="main-container">
         <div class="title-bar">
             <div class="title-content">
@@ -133,6 +135,69 @@
         </div>
 
         <div id="page-content" class="page-content"></div>
+        
+        <!-- 音量指示器 -->
+        <div class="volume-indicator" id="volume-indicator">
+            <div class="volume-indicator-icon">
+                <img src="../assets/icon/volume-high-solid-full.svg" alt="Volume">
+            </div>
+            <div class="volume-indicator-bar">
+                <div class="volume-indicator-fill" id="volume-indicator-fill" style="width: 50%;"></div>
+            </div>
+            <div class="volume-indicator-percent" id="volume-indicator-percent">50%</div>
+        </div>
+        
+        <!-- 歌曲指示器 -->
+        <div class="song-indicator" id="song-indicator">
+            <div class="song-indicator-icon">
+                <img src="../assets/icon/music-solid-full.svg" alt="Music">
+            </div>
+            <div class="song-indicator-content">
+                <div class="song-indicator-title" id="song-indicator-title"data-i18n="music.song_name"></div>
+                <div class="song-indicator-info" id="song-indicator-info"data-i18n="music.now_playing"></div>
+            </div>
+            <button class="song-indicator-next" id="song-indicator-next" onclick="skipToNextMusic()">
+                <img src="../assets/icon/forward-step-solid-full.svg" alt="Next">
+            </button>
+        </div>
+        
+        <!-- 音乐浮窗提示 -->
+        <div class="music-float-hint" id="music-float-hint">
+            <div class="music-float-hint-content">
+                <span data-i18n="music.float_window_disabled"></span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 音乐浮窗 (放在主容器外面，避免受到transform影响) -->
+    <div class="music-float-overlay" id="music-float-overlay"></div>
+    <div class="music-float" id="music-float">
+        <div class="music-float-header">
+            <h3 data-i18n="music.float_window"></h3>
+            <button class="music-float-close" onclick="closeMusicFloat()">
+                <img src="../assets/icon/xmark-solid-full.svg" alt="Close">
+            </button>
+        </div>
+        <div class="music-float-content">
+            <div class="music-float-song">
+                    <div class="music-float-song-title-container">
+                        <div class="music-float-song-title" id="music-float-song-title"></div>
+                    </div>
+                    <div class="music-float-song-info" id="music-float-song-info"></div>
+                </div>
+            <div class="music-float-controls">
+                <button class="music-float-btn" id="music-float-play-pause" onclick="togglePlayPause()">
+                    <img src="../assets/icon/play-solid-full.svg" alt="Play" id="music-float-play-pause-icon">
+                </button>
+                <button class="music-float-btn" onclick="skipToNextMusic()">
+                    <img src="../assets/icon/forward-step-solid-full.svg" alt="Next">
+                </button>
+            </div>
+            <div class="music-float-volume">
+                <label data-i18n="music.volume"></label>
+                <input type="range" class="music-float-volume-slider" id="music-float-volume-slider" min="0" max="100" value="50" onchange="setMusicVolume(this.value)">
+            </div>
+        </div>
     </div>
 </body>
 </html>

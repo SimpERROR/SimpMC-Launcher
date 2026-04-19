@@ -20,7 +20,9 @@ function initStore() {
                 onboardingCompleted: false,
                 appLocale: 'zh-CN',
                 character: null,
-                displayName: null
+                displayName: null,
+                musicEnabled: true,
+                musicVolume: 0.5
             }
         });
         console.log('Store initialized successfully');
@@ -45,7 +47,8 @@ function createWindow() {
         webPreferences: {
             preload: path.join(__dirname, '../preload.js'),
             contextIsolation: true,
-            nodeIntegration: false
+            nodeIntegration: false,
+            webSecurity: false
         }
     });
 
@@ -56,10 +59,22 @@ function createWindow() {
 app.whenReady().then(() => {
     initStore();
     createWindow();
+    
+    // 应用启动时扫描音乐目录，如果没有则自动创建
+    scanMusicDirectory();
 
     app.on('activate', function () {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
+});
+
+// 添加 IPC 处理，让渲染进程请求播放音乐
+ipcMain.handle('request_play_music', () => {
+    if (store && store.get('musicEnabled', true)) {
+        playNextTrack();
+        return true;
+    }
+    return false;
 });
 
 app.on('window-all-closed', function () {
@@ -548,6 +563,171 @@ ipcMain.handle('set_download_settings', (event, settings) => {
     store.set('downloadSettings.concurrentDownloads', settings.concurrentDownloads);
     store.set('downloadSettings.maxRetries', settings.maxRetries);
     return true;
+});
+
+let audioPlayer = null;
+let currentPlaylist = [];
+let currentTrackIndex = 0;
+
+function getMusicDirectory() {
+    let simpMcDir;
+    
+    if (app.isPackaged) {
+        // 打包后模式：使用可执行文件所在目录
+        const exePath = app.getPath('exe');
+        simpMcDir = path.join(path.dirname(exePath), 'SimpMC', 'music');
+    } else {
+        // 开发模式：使用项目根目录
+        simpMcDir = path.join(__dirname, '..', '..', 'SimpMC', 'music');
+    }
+    
+    console.log('[Music] Music directory:', simpMcDir);
+    return simpMcDir;
+}
+
+function getSupportedAudioFiles() {
+    return ['.mp3', '.wav', '.ogg', '.flac', '.m4a'];
+}
+
+function scanMusicDirectory() {
+    const musicDir = getMusicDirectory();
+    
+    console.log('[Music] Checking music directory:', musicDir);
+    console.log('[Music] Directory exists:', fs.existsSync(musicDir));
+    
+    // 如果目录不存在，创建它
+    if (!fs.existsSync(musicDir)) {
+        try {
+            fs.mkdirSync(musicDir, { recursive: true });
+            console.log('[Music] Created music directory:', musicDir);
+        } catch (error) {
+            console.error('[Music] Failed to create music directory:', error);
+            return [];
+        }
+    }
+    
+    try {
+        const files = fs.readdirSync(musicDir);
+        console.log('[Music] All files in directory:', files);
+        
+        const audioFiles = files.filter(file => {
+            const ext = path.extname(file).toLowerCase();
+            return getSupportedAudioFiles().includes(ext);
+        });
+        
+        console.log('[Music] Audio files found:', audioFiles);
+        
+        const audioPaths = audioFiles.map(file => path.join(musicDir, file));
+        console.log('[Music] Audio paths:', audioPaths);
+        return audioPaths;
+    } catch (error) {
+        console.error('[Music] Error scanning music directory:', error);
+        return [];
+    }
+}
+
+function getRandomTrack(excludeIndex = -1) {
+    if (currentPlaylist.length === 0) return null;
+    if (currentPlaylist.length === 1) return 0;
+    
+    let randomIndex;
+    do {
+        randomIndex = Math.floor(Math.random() * currentPlaylist.length);
+    } while (randomIndex === excludeIndex && currentPlaylist.length > 1);
+    
+    return randomIndex;
+}
+
+function playNextTrack() {
+    if (!mainWindow) return;
+    
+    if (currentPlaylist.length === 0) {
+        currentPlaylist = scanMusicDirectory();
+        if (currentPlaylist.length === 0) {
+            console.log('[Music] No music files found');
+            return;
+        }
+    }
+    
+    const nextIndex = getRandomTrack(currentTrackIndex);
+    if (nextIndex === null) return;
+    
+    currentTrackIndex = nextIndex;
+    const trackPath = currentPlaylist[currentTrackIndex];
+    
+    console.log('[Music] Playing:', trackPath);
+    mainWindow.webContents.send('music_ended', {
+        filePath: trackPath,
+        index: currentTrackIndex,
+        total: currentPlaylist.length
+    });
+}
+
+ipcMain.handle('get_music_settings', () => {
+    if (!store) return { enabled: true, volume: 0.5 };
+    return {
+        enabled: store.get('musicEnabled', true),
+        volume: store.get('musicVolume', 0.5)
+    };
+});
+
+ipcMain.handle('set_music_settings', (event, settings) => {
+    if (!store) return false;
+    if (settings.enabled !== undefined) {
+        store.set('musicEnabled', settings.enabled);
+    }
+    if (settings.volume !== undefined) {
+        store.set('musicVolume', settings.volume);
+    }
+    return true;
+});
+
+ipcMain.handle('set_music_volume', (event, volume) => {
+    if (!store) return false;
+    const clampedVolume = Math.max(0, Math.min(1, volume));
+    store.set('musicVolume', clampedVolume);
+    return true;
+});
+
+ipcMain.handle('toggle_music', () => {
+    if (!store) return false;
+    const currentEnabled = store.get('musicEnabled', true);
+    store.set('musicEnabled', !currentEnabled);
+    return !currentEnabled;
+});
+
+ipcMain.handle('skip_to_next_music', () => {
+    playNextTrack();
+    return true;
+});
+
+ipcMain.handle('read_audio_file', async (event, filePath) => {
+    try {
+        console.log('[Music] Reading audio file:', filePath);
+        console.log('[Music] File exists:', fs.existsSync(filePath));
+        
+        const data = fs.readFileSync(filePath);
+        console.log('[Music] File size:', data.length, 'bytes');
+        
+        const base64 = data.toString('base64');
+        console.log('[Music] Base64 length:', base64.length);
+        
+        const ext = path.extname(filePath).toLowerCase();
+        const mimeTypes = {
+            '.mp3': 'audio/mpeg',
+            '.wav': 'audio/wav',
+            '.ogg': 'audio/ogg',
+            '.flac': 'audio/flac',
+            '.m4a': 'audio/mp4'
+        };
+        const mimeType = mimeTypes[ext] || 'audio/mpeg';
+        const dataUrl = `data:${mimeType};base64,${base64}`;
+        console.log('[Music] Data URL length:', dataUrl.length);
+        return dataUrl;
+    } catch (error) {
+        console.error('[Music] Failed to read audio file:', error);
+        return null;
+    }
 });
 
 function getHttpClient(url) {

@@ -47,5 +47,13 @@ contextBridge.exposeInMainWorld('simpmcAPI', {
     copyVersion: (sourceVersionId, newVersionId) => ipcRenderer.invoke('copy_version', sourceVersionId, newVersionId),
     renameVersion: (oldVersionId, newVersionId) => ipcRenderer.invoke('rename_version', oldVersionId, newVersionId),
     getDownloadSettings: () => ipcRenderer.invoke('get_download_settings'),
-    setDownloadSettings: (settings) => ipcRenderer.invoke('set_download_settings', settings)
+    setDownloadSettings: (settings) => ipcRenderer.invoke('set_download_settings', settings),
+    getMusicSettings: () => ipcRenderer.invoke('get_music_settings'),
+    setMusicSettings: (settings) => ipcRenderer.invoke('set_music_settings', settings),
+    setMusicVolume: (volume) => ipcRenderer.invoke('set_music_volume', volume),
+    toggleMusic: () => ipcRenderer.invoke('toggle_music'),
+    skipToNextMusic: () => ipcRenderer.invoke('skip_to_next_music'),
+    onMusicEnded: (callback) => ipcRenderer.on('music_ended', callback),
+    readAudioFile: (filePath) => ipcRenderer.invoke('read_audio_file', filePath),
+    requestPlayMusic: () => ipcRenderer.invoke('request_play_music')
 });
