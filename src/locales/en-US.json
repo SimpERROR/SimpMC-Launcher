@@ -8,7 +8,9 @@
         "playing_as": "Playing as",
         "playing_as_suffix": "",
         "no_profiles": "No profiles",
-        "create_profile": "Please create a profile"
+        "create_profile": "Please create a profile",
+        "more_profiles": "More...",
+        "all_profiles": "All Profiles"
     },
     "download": {
         "title": "Download Minecraft",
@@ -169,6 +171,7 @@
         "custom": "Custom"
     },
     "common": {
+        "all": "All...",
         "cancel": "Cancel",
         "confirm": "Confirm",
         "delete": "Delete",

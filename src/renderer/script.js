@@ -1936,11 +1936,13 @@ function closeConfirmModal() {
 }
 
 let selectedProfileId = null;
+let recentProfileIds = [];
 
 async function loadProfilesForHomePage() {
     try {
         const data = await window.simpmcAPI.getProfiles();
         cachedProfiles = data.profiles || [];
+        recentProfileIds = data.recentProfileIds || [];
 
         try {
             const wardrobeData = await window.simpmcAPI.getWardrobe();
@@ -1960,25 +1962,35 @@ async function loadProfilesForHomePage() {
 function getSkinPreviewUrl(skinId) {
     if (!skinId) return '';
 
-    if (skinId === 'steve') {
-        return '../assets/icon/steve.png';
-    } else if (skinId === 'alex') {
-        return '../assets/icon/alex.png';
+    if (skinId === 'steve' || skinId === 'alex') {
+        return `../assets/icon/${skinId}.png`;
     }
 
     const allSkins = (cachedWardrobe && cachedWardrobe.skins) || [];
     const skin = allSkins.find(s => s.id === skinId);
-    if (skin) {
-        if (skin.filePath) {
-            return `file://${skin.filePath}`;
-        }
-        if (skin.isDefault) {
-            if (skin.id === 'steve') return '../assets/icon/steve.png';
-            if (skin.id === 'alex') return '../assets/icon/alex.png';
-        }
+    if (skin && skin.filePath) {
+        return `file:///${skin.filePath.replace(/\\/g, '/')}`;
     }
 
     return '';
+}
+
+function getProfileTypeLabel(type) {
+    const labels = {
+        'offline': i18n('auth.offline_character') || '离线',
+        'microsoft': i18n('auth.official_character') || '正版',
+        'third_party': i18n('auth.third_party_character') || '第三方'
+    };
+    return labels[type] || type || '未知';
+}
+
+function getProfileTypeClass(type) {
+    const classes = {
+        'offline': 'type-offline',
+        'microsoft': 'type-microsoft',
+        'third_party': 'type-third-party'
+    };
+    return classes[type] || 'type-unknown';
 }
 
 function renderProfileSelector() {
@@ -1994,7 +2006,7 @@ function renderProfileSelector() {
             <span class="profile-dropdown-item-name">${createText}</span>
         </div>`;
         if (currentName) currentName.textContent = createText;
-        if (currentSkin) currentSkin.src = '';
+        if (currentSkin) currentSkin.style.backgroundImage = '';
         selectedProfileId = null;
         return;
     }
@@ -2003,40 +2015,135 @@ function renderProfileSelector() {
         selectedProfileId = cachedProfiles[0].id;
     }
 
+    if (!recentProfileIds.includes(selectedProfileId)) {
+        recentProfileIds = [selectedProfileId, ...recentProfileIds.filter(id => id !== selectedProfileId)].slice(0, 3);
+    }
+
     const selectedProfile = cachedProfiles.find(p => p.id === selectedProfileId);
 
     if (currentName) currentName.textContent = selectedProfile ? selectedProfile.name : '-';
     if (currentSkin) {
         const skinUrl = selectedProfile ? getSkinPreviewUrl(selectedProfile.skinId) : '';
-        console.log('renderProfileSelector - profile:', selectedProfile, 'skinUrl:', skinUrl, 'skinId:', selectedProfile?.skinId);
-        currentSkin.src = skinUrl;
+        if (skinUrl) {
+            currentSkin.style.backgroundImage = `url('${skinUrl}')`;
+        } else {
+            currentSkin.style.backgroundImage = '';
+        }
     }
 
-    menu.innerHTML = cachedProfiles.map(profile => {
+    const MAX_RECENT = 3;
+    const recentProfiles = recentProfileIds
+        .map(id => cachedProfiles.find(p => p.id === id))
+        .filter(p => p);
+
+    const otherProfiles = cachedProfiles.filter(p => !recentProfileIds.includes(p.id));
+
+    let html = '';
+
+    if (recentProfiles.length > 0) {
+        html += recentProfiles.map(profile => {
+            const isSelected = profile.id === selectedProfileId;
+            const skinUrl = getSkinPreviewUrl(profile.skinId);
+            return `
+                <div class="profile-dropdown-item ${isSelected ? 'selected' : ''}"
+                     onclick="selectProfile('${profile.id}', '${profile.name.replace(/'/g, "\\'")}', '${skinUrl}')">
+                    <div class="profile-dropdown-item-skin" style="${skinUrl ? `background-image: url('${skinUrl}')` : ''}"></div>
+                    <span class="profile-dropdown-item-name">${profile.name}</span>
+                    <span class="profile-type-badge ${getProfileTypeClass(profile.type)}">${getProfileTypeLabel(profile.type)}</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    if (otherProfiles.length > 0) {
+        html += `
+            <div class="profile-dropdown-item profile-more-item" onclick="openAllProfilesModal()">
+                <span class="profile-dropdown-item-name">${i18n('home.more_profiles') || '更多...'}</span>
+            </div>
+        `;
+    }
+
+    menu.innerHTML = html;
+}
+
+let currentProfileFilter = 'all';
+
+function openAllProfilesModal() {
+    const modal = document.getElementById('all-profiles-modal');
+    if (modal) {
+        currentProfileFilter = 'all';
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.type === 'all');
+        });
+        document.getElementById('profile-search-input').value = '';
+        renderAllProfilesList();
+        modal.classList.add('show');
+    }
+}
+
+function closeAllProfilesModal() {
+    const modal = document.getElementById('all-profiles-modal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+}
+
+function filterProfilesByType(type) {
+    currentProfileFilter = type;
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.type === type);
+    });
+    renderAllProfilesList();
+}
+
+function filterProfiles() {
+    renderAllProfilesList();
+}
+
+function renderAllProfilesList() {
+    const list = document.getElementById('all-profiles-list');
+    if (!list) return;
+
+    const searchText = (document.getElementById('profile-search-input')?.value || '').toLowerCase();
+
+    const filtered = cachedProfiles.filter(p => {
+        const matchesType = currentProfileFilter === 'all' || p.type === currentProfileFilter;
+        const matchesSearch = !searchText || p.name.toLowerCase().includes(searchText);
+        return matchesType && matchesSearch;
+    });
+
+    list.innerHTML = filtered.map(profile => {
         const isSelected = profile.id === selectedProfileId;
         const skinUrl = getSkinPreviewUrl(profile.skinId);
-        console.log('Rendering profile:', profile.name, 'skinId:', profile.skinId, 'skinUrl:', skinUrl);
+        const typeLabel = getProfileTypeLabel(profile.type);
         return `
-            <div class="profile-dropdown-item ${isSelected ? 'selected' : ''}"
-                 onclick="selectProfile('${profile.id}', '${profile.name.replace(/'/g, "\\'")}', '${skinUrl}')">
-                <img class="profile-dropdown-item-skin" src="${skinUrl}" alt=""
-                     onerror="this.style.display='none'">
-                <span class="profile-dropdown-item-name">${profile.name}</span>
+            <div class="all-profile-item ${isSelected ? 'selected' : ''}"
+                 onclick="selectProfile('${profile.id}', '${profile.name.replace(/'/g, "\\'")}', '${skinUrl}'); closeAllProfilesModal();">
+                <div class="all-profile-item-skin" style="${skinUrl ? `background-image: url('${skinUrl}')` : ''}"></div>
+                <div class="all-profile-item-info">
+                    <div class="all-profile-item-name">${profile.name}</div>
+                    <div class="all-profile-item-type">${typeLabel}</div>
+                </div>
             </div>
         `;
     }).join('');
 }
 
 function selectProfile(profileId, profileName, skinUrl) {
-    console.log('selectProfile called:', { profileId, profileName, skinUrl });
     selectedProfileId = profileId;
+    recentProfileIds = [profileId, ...recentProfileIds.filter(id => id !== profileId)].slice(0, 5);
+    window.simpmcAPI.setRecentProfiles(recentProfileIds);
+
     const currentName = document.getElementById('current-profile-name');
     const currentSkin = document.getElementById('current-profile-skin');
 
     if (currentName) currentName.textContent = profileName;
     if (currentSkin) {
-        console.log('Setting currentSkin.src to:', skinUrl);
-        currentSkin.src = skinUrl;
+        if (skinUrl) {
+            currentSkin.style.backgroundImage = `url('${skinUrl}')`;
+        } else {
+            currentSkin.style.backgroundImage = '';
+        }
     }
 
     document.querySelectorAll('.profile-dropdown-item').forEach(item => {
@@ -2044,6 +2151,7 @@ function selectProfile(profileId, profileName, skinUrl) {
     });
     event.currentTarget.classList.add('selected');
 
+    renderProfileSelector();
     toggleProfileDropdown();
 }
 

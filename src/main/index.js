@@ -177,6 +177,7 @@ ipcMain.handle('get_profiles', () => {
     if (!store) return { profiles: [], currentCharacter: null };
     const profiles = [...store.get('profiles', [])];
     const currentCharacter = store.get('character', null);
+    const recentProfileIds = store.get('recentProfileIds', []);
     
     if (currentCharacter && !profiles.find(p => p.id === currentCharacter.id)) {
         profiles.unshift(currentCharacter);
@@ -184,8 +185,15 @@ ipcMain.handle('get_profiles', () => {
     
     return {
         profiles: profiles,
-        currentCharacter: currentCharacter
+        currentCharacter: currentCharacter,
+        recentProfileIds: recentProfileIds
     };
+});
+
+ipcMain.handle('set_recent_profiles', (event, recentIds) => {
+    if (!store) return false;
+    store.set('recentProfileIds', recentIds);
+    return true;
 });
 
 ipcMain.handle('update_profile', (event, profileData) => {
@@ -220,11 +228,44 @@ ipcMain.handle('delete_profile', (event, profileId) => {
 
 ipcMain.handle('get_wardrobe', () => {
     if (!store) return { skins: [], capes: [] };
+    const skins = store.get('wardrobe.skins', []);
+    const capes = store.get('wardrobe.capes', []);
+    migrateOldFiles(skins, 'skin');
+    migrateOldFiles(capes, 'cape');
     return {
         skins: store.get('wardrobe.skins', []),
         capes: store.get('wardrobe.capes', [])
     };
 });
+
+function migrateOldFiles(items, type) {
+    const targetDir = path.join(app.getPath('userData'), type === 'skin' ? 'skins' : 'capes');
+    let changed = false;
+    for (const item of items) {
+        if (item.filePath && !item.migrated) {
+            const normalizedPath = item.filePath.replace(/\\/g, '/');
+            if (fs.existsSync(normalizedPath)) {
+                if (!fs.existsSync(targetDir)) {
+                    fs.mkdirSync(targetDir, { recursive: true });
+                }
+                const fileName = `${crypto.randomUUID()}_${path.basename(item.filePath)}`;
+                const destPath = path.join(targetDir, fileName);
+                try {
+                    fs.copyFileSync(normalizedPath, destPath);
+                    item.filePath = destPath;
+                    item.migrated = true;
+                    changed = true;
+                } catch (err) {
+                    console.error('Failed to migrate file:', err);
+                }
+            }
+        }
+    }
+    if (changed) {
+        const key = `wardrobe.${type}s`;
+        store.set(key, items);
+    }
+}
 
 ipcMain.handle('add_wardrobe_item', (event, item) => {
     if (!store) return false;
@@ -288,7 +329,15 @@ ipcMain.handle('select_skin_file', async () => {
     if (result.canceled || result.filePaths.length === 0) {
         return null;
     }
-    return result.filePaths[0];
+    const sourcePath = result.filePaths[0];
+    const skinsDir = path.join(app.getPath('userData'), 'skins');
+    if (!fs.existsSync(skinsDir)) {
+        fs.mkdirSync(skinsDir, { recursive: true });
+    }
+    const fileName = `${crypto.randomUUID()}_${path.basename(sourcePath)}`;
+    const destPath = path.join(skinsDir, fileName);
+    fs.copyFileSync(sourcePath, destPath);
+    return destPath;
 });
 
 ipcMain.handle('select_cape_file', async () => {
@@ -299,7 +348,15 @@ ipcMain.handle('select_cape_file', async () => {
     if (result.canceled || result.filePaths.length === 0) {
         return null;
     }
-    return result.filePaths[0];
+    const sourcePath = result.filePaths[0];
+    const capesDir = path.join(app.getPath('userData'), 'capes');
+    if (!fs.existsSync(capesDir)) {
+        fs.mkdirSync(capesDir, { recursive: true });
+    }
+    const fileName = `${crypto.randomUUID()}_${path.basename(sourcePath)}`;
+    const destPath = path.join(capesDir, fileName);
+    fs.copyFileSync(sourcePath, destPath);
+    return destPath;
 });
 
 ipcMain.handle('open_character_window', (event, characterType, editProfile) => {

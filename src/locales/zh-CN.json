@@ -8,7 +8,9 @@
         "playing_as": "以",
         "playing_as_suffix": "的身份游玩",
         "no_profiles": "暂无档案",
-        "create_profile": "请新建档案"
+        "create_profile": "请新建档案",
+        "more_profiles": "更多...",
+        "all_profiles": "所有档案"
     },
     "download": {
         "title": "下载 Minecraft",
@@ -169,6 +171,7 @@
         "custom": "自定义"
     },
     "common": {
+        "all": "全部……",
         "cancel": "取消",
         "confirm": "确认",
         "delete": "删除",

@@ -3,6 +3,15 @@
         "title": "SimpMC 啟動器",
         "launch": "啟動遊戲"
     },
+    "home": {
+        "launch": "啟動遊戲",
+        "playing_as": "以",
+        "playing_as_suffix": "的身份遊玩",
+        "no_profiles": "暫無檔案",
+        "create_profile": "請新建檔案",
+        "more_profiles": "更多...",
+        "all_profiles": "所有檔案"
+    },
     "download": {
         "title": "下載 Minecraft",
         "select_version": "選擇版本",
@@ -162,6 +171,7 @@
         "custom": "自定義"
     },
     "common": {
+        "all": "全部……",
         "cancel": "取消",
         "confirm": "確認",
         "delete": "刪除",

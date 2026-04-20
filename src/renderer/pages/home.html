@@ -231,6 +231,22 @@
     border-radius: 4px;
     background: rgba(255, 255, 255, 0.1);
     image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    background-repeat: no-repeat;
+    background-size: 256px 256px;
+    background-position: -32px -32px;
+}
+
+.profile-dropdown-item-skin {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    background-repeat: no-repeat;
+    background-size: 256px 256px;
+    background-position: -32px -32px;
 }
 
 .profile-selector-dropdown {
@@ -258,28 +274,40 @@
     background: rgba(50, 50, 50, 0.98);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 10px;
-    padding: 8px 0;
-    min-width: 200px;
+    padding: 6px 0;
+    min-width: 300px;
+    max-height: 300px;
+    overflow-y: auto;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-    display: none;
-    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.2s ease;
 }
 
 .profile-dropdown-menu.show {
-    display: block;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
 
 .profile-dropdown-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
+    gap: 8px;
+    padding: 8px 12px;
     cursor: pointer;
     transition: background 0.2s;
 }
 
 .profile-dropdown-item:hover {
     background: rgba(255, 255, 255, 0.1);
+}
+
+.profile-dropdown-item-name {
+    font-size: 13px;
+    color: white;
+    font-weight: 500;
 }
 
 .profile-dropdown-item.selected {
@@ -292,14 +320,54 @@
     border-radius: 4px;
     background: rgba(255, 255, 255, 0.1);
     image-rendering: pixelated;
-    object-fit: none;
-    clip-path: inset(0 0 24px 0 round 4px);
+    image-rendering: crisp-edges;
+    background-repeat: no-repeat;
+    background-size: 256px 256px;
+    background-position: -32px -32px;
+    flex-shrink: 0;
 }
 
 .profile-dropdown-item-name {
     font-size: 14px;
     color: white;
     font-weight: 500;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.profile-type-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.profile-type-badge.type-offline {
+    background: rgba(128, 128, 128, 0.3);
+    color: #ccc;
+}
+
+.profile-type-badge.type-microsoft {
+    background: rgba(0, 120, 212, 0.3);
+    color: #6db3f2;
+}
+
+.profile-type-badge.type-third-party {
+    background: rgba(255, 152, 0, 0.3);
+    color: #ffb74d;
+}
+
+.profile-more-item {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.profile-more-item:hover {
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .launch-game-btn {
@@ -328,7 +396,192 @@
 .launch-game-btn:active {
     transform: translateY(0);
 }
+
+.all-profiles-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.all-profiles-modal.show {
+    display: flex;
+    opacity: 1;
+}
+
+.all-profiles-content {
+    background: #2a2a2a;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.all-profiles-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.all-profiles-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: white;
+}
+
+.all-profiles-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.all-profiles-close:hover {
+    color: white;
+}
+
+.all-profiles-filters {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.all-profiles-search {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    font-size: 14px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+}
+
+.all-profiles-search::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.all-profiles-filter-tabs {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.filter-tab {
+    padding: 6px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-tab:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.filter-tab.active {
+    background: rgba(25, 118, 210, 0.3);
+    border-color: #1976D2;
+    color: white;
+}
+
+.all-profiles-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.all-profile-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.all-profile-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.all-profile-item.selected {
+    background: rgba(25, 118, 210, 0.2);
+}
+
+.all-profile-item-skin {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    background-repeat: no-repeat;
+    background-size: 320px 320px;
+    background-position: -40px -40px;
+    flex-shrink: 0;
+}
+
+.all-profile-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.all-profile-item-name {
+    font-size: 14px;
+    color: white;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.all-profile-item-type {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 2px;
+}
 </style>
+
+<div class="all-profiles-modal" id="all-profiles-modal">
+    <div class="all-profiles-content">
+        <div class="all-profiles-header">
+            <h2 data-i18n="home.all_profiles">所有档案</h2>
+            <button class="all-profiles-close" onclick="closeAllProfilesModal()">×</button>
+        </div>
+        <div class="all-profiles-filters">
+            <input type="text" class="all-profiles-search" id="profile-search-input" placeholder="搜索档案..."
+                   oninput="filterProfiles()">
+            <div class="all-profiles-filter-tabs">
+                <button class="filter-tab active" data-type="all" onclick="filterProfilesByType('all')" data-i18n="common.all">全部</button>
+                <button class="filter-tab" data-type="microsoft" onclick="filterProfilesByType('microsoft')" data-i18n="auth.official_character">正版</button>
+                <button class="filter-tab" data-type="offline" onclick="filterProfilesByType('offline')" data-i18n="auth.offline_character">离线</button>
+                <button class="filter-tab" data-type="third_party" onclick="filterProfilesByType('third_party')" data-i18n="auth.third_party_character">第三方</button>
+            </div>
+        </div>
+        <div class="all-profiles-list" id="all-profiles-list"></div>
+    </div>
+</div>
 
 <div class="page-header">
     <h1 id="greeting" class="greeting"></h1>
@@ -339,7 +592,7 @@
     <span class="profile-selector-label" data-i18n="home.playing_as">以</span>
     <div class="profile-selector-wrapper">
         <div class="profile-selector-container" id="profile-selector-container" onclick="toggleProfileDropdown()">
-            <img class="profile-skin-preview" id="current-profile-skin" src="" alt="">
+            <div class="profile-skin-preview" id="current-profile-skin"></div>
             <div class="profile-selector-dropdown">
                 <span class="profile-selector-name" id="current-profile-name">-</span>
                 <span class="profile-selector-arrow">▼</span>

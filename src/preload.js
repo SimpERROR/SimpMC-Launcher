@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('simpmcAPI', {
     getProfiles: () => ipcRenderer.invoke('get_profiles'),
     updateProfile: (data) => ipcRenderer.invoke('update_profile', data),
     deleteProfile: (profileId) => ipcRenderer.invoke('delete_profile', profileId),
+    setRecentProfiles: (recentIds) => ipcRenderer.invoke('set_recent_profiles', recentIds),
     closeCharacterWindow: () => ipcRenderer.send('close_character_window'),
     createCharacter: (data) => ipcRenderer.send('create_character', data),
     microsoftAuth: () => ipcRenderer.invoke('microsoft_auth'),
