@@ -3,7 +3,7 @@
     "banners": [
         {
             "id": 1,
-            "image_url": " https://raw.githubusercontent.com/SimpERROR/SimpMC_Launcher/main/SimpMC_Assets/images/Pic1.svg",
+            "image_url": "https://raw.githubusercontent.com/SimpERROR/SimpMC-Launcher/refs/heads/main/SimpMC_Assets/images/Pic1.svg",
             "link": "",
             "title": "SimpMC 锐意开发中！",
             "desc": "是的，还在开发中……"
