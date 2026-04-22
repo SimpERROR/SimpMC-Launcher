@@ -178,6 +178,16 @@
         "edit": "編輯",
         "save": "儲存"
     },
+    "discovery": {
+        "title": "發現",
+        "info": {
+            "title": "發現頁面",
+            "description": "這裡將展示社區內容、推薦資源和最新動態。功能正在開發中，敬請期待！"
+        },
+        "carousel": {
+            "load_error": "載入失敗"
+        }
+    },
     "music": {
         "song_name": "歌曲名稱",
         "now_playing": "當前播放"

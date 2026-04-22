@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_图层_1" data-name="图层 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1000 255">
+  <defs>
+    <style>
+      .cls-1 {
+        letter-spacing: 0em;
+      }
+
+      .cls-2 {
+        fill: #e8edff;
+        font-size: 15px;
+      }
+
+      .cls-2, .cls-3 {
+        font-family: AlimamaFangYuanTiVF-MediumRound, 'Alimama FangYuanTi VF';
+        font-variation-settings: 'wght' 500, 'BEVL' 100;
+        font-weight: 500;
+      }
+
+      .cls-4 {
+        fill: #b0d5ff;
+      }
+
+      .cls-5 {
+        font-family: AlimamaFangYuanTiVF-BoldRound, 'Alimama FangYuanTi VF';
+        font-size: 87px;
+        font-variation-settings: 'wght' 700, 'BEVL' 100;
+        font-weight: 700;
+      }
+
+      .cls-5, .cls-3 {
+        fill: #fff;
+      }
+
+      .cls-6 {
+        letter-spacing: -.03em;
+      }
+
+      .cls-3 {
+        font-size: 43.31px;
+      }
+
+      .cls-7 {
+        fill: url(#_未命名的渐变_2);
+      }
+    </style>
+    <linearGradient id="_未命名的渐变_2" data-name="未命名的渐变 2" x1="212.74" y1="47.5" x2="373.12" y2="207.88" gradientTransform="translate(0 255) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset=".09" stop-color="#4488f5"/>
+      <stop offset=".92" stop-color="#67c9f5"/>
+    </linearGradient>
+  </defs>
+  <rect class="cls-4" width="1000" height="255"/>
+  <g id="_图层_1-2" data-name=" 图层 1-2">
+    <path class="cls-7" d="m345.93,35.81h-106c-21.17,0-38.5,17.33-38.5,38.5v106c0,21.17,17.33,38.5,38.5,38.5h106c21.17,0,38.5-17.33,38.5-38.5v-106c0-21.17-17.33-38.5-38.5-38.5Zm-105.08,154.32l-12.74,10.29,20.58-38.72-35.54-36.02,83.56-29.65-47.05,37.25,34.31,24.51-43.13,32.35h0Zm48.46-33.93l47.05-37.25-34.31-24.51,43.13-32.35,12.74-10.29-20.58,38.72,35.53,36.02-83.56,29.65h0Z"/>
+  </g>
+  <text class="cls-5" transform="translate(451.28 132.29)"><tspan x="0" y="0">SimpMC</tspan></text>
+  <text class="cls-3" transform="translate(458.69 197.76)"><tspan class="cls-6" x="0" y="0">L</tspan><tspan class="cls-1" x="21.26" y="0">auncher</tspan></text>
+  <text class="cls-2" transform="translate(673.2 198.1)"><tspan x="0" y="0">By SimpERROR_</tspan></text>
+</svg>

@@ -539,6 +539,7 @@ async function switchPage(pageName) {
         pageContent.innerHTML = tempDiv.innerHTML;
         await applyTranslations();
 
+        // 针对部分页面，运行特定函数
         if (pageName === 'home') {
             updateGreeting();
             if (window.loadHomePage) {
@@ -563,6 +564,8 @@ async function switchPage(pageName) {
             loadDownloadSettingsPage();
         } else if (pageName === 'personalization') {
             loadPersonalizationPage();
+        } else if (pageName === 'discovery') {
+            loadCarousel()        
         }
     } catch (error) {
         console.error('Error loading page:', error);

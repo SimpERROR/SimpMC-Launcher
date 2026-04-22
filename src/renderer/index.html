@@ -5,6 +5,7 @@
     <title data-i18n="launcher.title"></title>
     <script src="script.js"></script>
     <script src="i18n.js"></script>
+    <script src="js/carousel.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -126,10 +127,12 @@
                 </div>
             </div>
         </div>
-
+        
+        <!-- 左侧菜单栏 -->
         <div id="menu-container" class="menu-container">
             <img src="../assets/icon/house-solid-full.svg" alt="Home" class="menu-icon active" data-page="home" onclick="switchPage('home')">
             <img src="../assets/icon/shirt-solid-full.svg" alt="Wardrobe" class="menu-icon" data-page="wardrobe" onclick="switchPage('wardrobe')">
+            <img src="../assets/icon/compass-solid-full.svg" alt="Discovery" class="menu-icon" data-page="discovery" onclick="switchPage('discovery')">
             <img src="../assets/icon/download-solid-full.svg" alt="Download" class="menu-icon" data-page="download" onclick="switchPage('download')">
             <img src="../assets/icon/gear-solid-full.svg" alt="Settings" class="menu-icon" data-page="settings" onclick="switchPage('settings')">
         </div>

@@ -1,0 +1,185 @@
+<style>
+    .info-bg {
+        background: rgba(0, 74, 234, 0.15);
+        padding: 20px;
+        border-radius: 12px;
+        margin: 20px 0;
+        border-left: 5px solid #1976D2;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 4px 12px rgba(0, 118, 210, 0.2);
+    }
+
+    .info-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #6db3f2;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-text {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .info-icon {
+        width: 24px;
+        height: 24px;
+        opacity: 0.8;
+    }
+
+    .carousel-container {
+        position: relative;
+        width: 100%;
+        height: 200px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 12px rgba(0, 118, 210, 0.2);
+    }
+
+    .carousel-track {
+        display: flex;
+        height: 100%;
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .carousel-slide {
+        min-width: 100%;
+        height: 100%;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .carousel-slide img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .carousel-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 40px 20px 20px;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+        backdrop-filter: blur(4px);
+    }
+
+    .carousel-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 4px;
+    }
+
+    .carousel-desc {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .carousel-dots {
+        position: absolute;
+        bottom: 12px;
+        right: 20px;
+        display: flex;
+        gap: 8px;
+    }
+
+    .carousel-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.4);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .carousel-dot.active {
+        background: white;
+        transform: scale(1.2);
+    }
+
+    .carousel-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(4px);
+        border: none;
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+        opacity: 0;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .carousel-container:hover .carousel-arrow {
+        opacity: 1;
+    }
+
+    .carousel-arrow:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .carousel-arrow.prev {
+        left: 12px;
+    }
+
+    .carousel-arrow.next {
+        right: 12px;
+    }
+
+    .carousel-loading, .carousel-error {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 14px;
+    }
+
+    .carousel-error {
+        color: rgba(255, 100, 100, 0.8);
+    }
+</style>
+
+<div class="page-header">
+    <h1 data-i18n="discovery.title"></h1>
+</div>
+
+<div class="page-body">
+    <div class="carousel-container" id="carousel-container">
+        <div class="carousel-track" id="carousel-track"></div>
+        <button class="carousel-arrow prev" onclick="carouselPrev()">‹</button>
+        <button class="carousel-arrow next" onclick="carouselNext()">›</button>
+        <div class="carousel-dots" id="carousel-dots"></div>
+        <div class="carousel-loading" id="carousel-loading" data-i18n="common.loading">加载中...</div>
+    </div>
+
+    <div class="info-bg">
+        <div class="info-title">
+            <svg class="info-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+            </svg>
+            <span data-i18n="discovery.info.title"></span>
+        </div>
+        <p class="info-text" data-i18n="discovery.info.description"></p>
+    </div>
+</div>
+
+<script>
+
+</script>

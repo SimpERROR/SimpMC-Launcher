@@ -178,6 +178,16 @@
         "edit": "Edit",
         "save": "Save"
     },
+    "discovery": {
+        "title": "Discovery",
+        "info": {
+            "title": "Discovery Page",
+            "description": "This page will showcase community content, recommended resources, and latest updates. Feature under development, stay tuned!"
+        },
+        "carousel": {
+            "load_error": "Failed to load"
+        }
+    },
     "versions": {
         "title": "Version Management",
         "download_new": "Download New Version",
