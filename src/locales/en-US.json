@@ -205,5 +205,16 @@
         "float_window_disabled": "Music floating window feature is disabled.",
         "volume": "Volume",
         "no_music_playing": "No music playing"
+    },
+    "widgets": {
+        "store_title": "Widget Store",
+        "title": "Widgets",
+        "manage_title": "Widget Management",
+        "installed": "Installed",
+        "add": "Add Widget",
+        "drag_hint": "Drag to reorder",
+        "store": "Widget Store",
+        "no_installed": "No widgets installed yet",
+        "manage": "Manage Widgets"
     }
 }

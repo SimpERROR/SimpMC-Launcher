@@ -187,6 +187,10 @@
         },
         "carousel": {
             "load_error": "加载失败"
+        },
+        "widgets":{
+            "title": "小组件商店",
+            "description": "众多主页小组件，供你挑选！"
         }
     },
     "versions": {
@@ -206,5 +210,16 @@
         "float_window_disabled": "音乐浮窗 功能未开启。",
         "volume": "音量",
         "no_music_playing": "暂无音乐播放"
+    },
+    "widgets": {
+        "store_title": "小组件商店",
+        "title": "小组件",
+        "manage_title": "小组件管理",
+        "installed": "已安装",
+        "add": "添加小组件",
+        "drag_hint": "拖拽可调整顺序",
+        "store": "小组件商店",
+        "no_installed": "还没有安装任何小组件",
+        "manage": "管理小组件"
     }
 }

@@ -191,5 +191,16 @@
     "music": {
         "song_name": "歌曲名稱",
         "now_playing": "當前播放"
+    },
+    "widgets": {
+        "store_title": "小工具商店",
+        "title": "小工具",
+        "manage_title": "小工具管理",
+        "installed": "已安裝",
+        "add": "添加小工具",
+        "drag_hint": "拖曳可調整順序",
+        "store": "小工具商店",
+        "no_installed": "還沒有安裝任何小工具",
+        "manage": "管理小工具"
     }
 }

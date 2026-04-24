@@ -1,0 +1,845 @@
+<style>
+    .page-header {
+        position: relative;
+        height: 40px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        padding-left: 50px;
+    }
+    .page-header h1 {
+        text-align: left;
+        margin: 0;
+        line-height: 40px;
+    }
+    .back-btn {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.3s;
+    }
+    .back-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+    .back-btn img {
+        width: 20px;
+        height: 20px;
+        filter: brightness(0) invert(1);
+    }
+
+    .page-body {
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .widgets-section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: white;
+        margin: 0;
+    }
+
+    .add-widget-btn {
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .add-widget-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
+    }
+
+    .widgets-installed-section {
+        margin-bottom: 40px;
+    }
+
+    .installed-widgets-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+        margin-top: 16px;
+    }
+
+    .installed-widget-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 16px;
+        transition: all 0.3s;
+        cursor: grab;
+        position: relative;
+    }
+
+    .installed-widget-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .installed-widget-card.dragging {
+        opacity: 0.5;
+        transform: scale(0.95);
+    }
+
+    .installed-widget-card.drag-over {
+        border-color: #1976D2;
+        border-style: dashed;
+        background: rgba(25, 118, 210, 0.1);
+    }
+
+    .installed-widget-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+    }
+
+    .installed-widget-info {
+        flex: 1;
+    }
+
+    .installed-widget-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 4px;
+    }
+
+    .installed-widget-size {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.5);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .size-badge {
+        padding: 2px 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        font-size: 11px;
+    }
+
+    .installed-widget-actions {
+        display: flex;
+        gap: 4px;
+    }
+
+    .widget-action-btn {
+        width: 28px;
+        height: 28px;
+        border: none;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.7);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .widget-action-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    .widget-action-btn.delete:hover {
+        background: rgba(244, 67, 54, 0.3);
+        color: #f44336;
+    }
+
+    .widget-action-btn.move {
+        cursor: grab;
+    }
+
+    .installed-widget-preview {
+        height: 80px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 13px;
+        overflow: hidden;
+    }
+
+    .empty-installed {
+        text-align: center;
+        padding: 60px 20px;
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .empty-installed-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+    }
+
+    .empty-installed-text {
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    .widgets-store-section {
+        margin-top: 40px;
+    }
+
+    .store-widgets-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px;
+        margin-top: 16px;
+    }
+
+    .store-widget-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 16px;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .store-widget-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .store-widget-card.installed {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .store-widget-card.installed:hover {
+        transform: none;
+    }
+
+    .store-widget-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .store-widget-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: white;
+    }
+
+    .store-widget-badge {
+        padding: 4px 10px;
+        background: rgba(76, 175, 80, 0.2);
+        color: #4CAF50;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    .store-widget-badge.installed {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .store-widget-desc {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 12px;
+        line-height: 1.5;
+    }
+
+    .store-widget-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.4);
+    }
+
+    .store-widget-add-btn {
+        padding: 6px 14px;
+        background: rgba(25, 118, 210, 0.2);
+        border: 1px solid #1976D2;
+        border-radius: 6px;
+        color: #1976D2;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .store-widget-add-btn:hover {
+        background: rgba(25, 118, 210, 0.4);
+    }
+
+    .store-widget-add-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.2s;
+    }
+
+    .loading-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(255, 255, 255, 0.1);
+        border-top-color: #1976D2;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .toast {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%) translateY(100px);
+        background: rgba(50, 50, 50, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 12px 24px;
+        color: white;
+        font-size: 14px;
+        z-index: 2000;
+        opacity: 0;
+        transition: all 0.3s ease;
+        pointer-events: none;
+    }
+
+    .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.success {
+        border-color: #4CAF50;
+        background: rgba(76, 175, 80, 0.2);
+    }
+
+    .toast.error {
+        border-color: #f44336;
+        background: rgba(244, 67, 54, 0.2);
+    }
+
+    .drag-hint {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.4);
+        margin-top: 12px;
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 6px;
+    }
+
+    .drag-hint-icon {
+        font-size: 16px;
+    }
+
+    .confirm-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .confirm-modal.show {
+        display: flex;
+    }
+
+    .confirm-content {
+        background: #2a2a2a;
+        border-radius: 12px;
+        padding: 24px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        animation: modalFadeIn 0.2s ease;
+    }
+
+    @keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .confirm-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 12px;
+    }
+
+    .confirm-message {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 24px;
+        line-height: 1.5;
+    }
+
+    .confirm-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .confirm-btn {
+        padding: 10px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .confirm-btn.cancel {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .confirm-btn.cancel:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .confirm-btn.danger {
+        background: rgba(244, 67, 54, 0.8);
+        color: white;
+    }
+
+    .confirm-btn.danger:hover {
+        background: #f44336;
+    }
+
+    .widget-type-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        margin-left: 8px;
+    }
+
+    .widget-type-badge.enabled {
+        background: rgba(76, 175, 80, 0.2);
+        color: #4CAF50;
+    }
+
+    .widget-type-badge.disabled {
+        background: rgba(255, 152, 0, 0.2);
+        color: #ffb74d;
+    }
+</style>
+
+<div class="page-header">
+    <button class="back-btn" onclick="switchPage('home')">
+        <img src="../assets/icon/arrow-left-solid-full.svg" alt="Back">
+    </button>
+    <h1 data-i18n="widgets.store_title">小组件管理</h1>
+</div>
+
+<div class="page-body">
+    <div class="widgets-section-header">
+        <h2 class="section-title" data-i18n="widgets.installed">已安装</h2>
+        <button class="add-widget-btn" id="add-widget-btn">
+            <span>+</span>
+            <span data-i18n="widgets.add">添加小组件</span>
+        </button>
+    </div>
+
+    <div class="widgets-installed-section">
+        <div class="installed-widgets-grid" id="installed-widgets-grid"></div>
+        <div class="drag-hint">
+            <span class="drag-hint-icon">&#8693;</span>
+            <span data-i18n="widgets.drag_hint">拖拽可调整顺序</span>
+        </div>
+    </div>
+
+    <div class="widgets-store-section">
+        <h2 class="section-title" data-i18n="widgets.store">小组件商店</h2>
+        <div class="store-widgets-grid" id="store-widgets-grid"></div>
+    </div>
+</div>
+
+<div class="loading-overlay" id="loading-overlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="confirm-modal" id="confirm-modal">
+    <div class="confirm-content">
+        <h3 class="confirm-title" id="confirm-title"></h3>
+        <p class="confirm-message" id="confirm-message"></p>
+        <div class="confirm-actions">
+            <button class="confirm-btn cancel" onclick="closeConfirmModal()" data-i18n="common.cancel">取消</button>
+            <button class="confirm-btn danger" id="confirm-btn" data-i18n="common.confirm">确认</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const WIDGET_TEMPLATES = {
+    'welcome': {
+        name: '欢迎',
+        size: '2x1',
+        desc: '显示欢迎信息和快捷引导',
+        category: 'information'
+    },
+    'quick-actions': {
+        name: '快捷操作',
+        size: '1x2',
+        desc: '快速访问常用功能',
+        category: 'function'
+    },
+    'recent-versions': {
+        name: '最近版本',
+        size: '1x1',
+        desc: '显示最近玩过的游戏版本',
+        category: 'information'
+    },
+    'news': {
+        name: '资讯',
+        size: '2x1',
+        desc: '显示最新的 Minecraft 新闻',
+        category: 'information'
+    },
+    'server-status': {
+        name: '服务器状态',
+        size: '1x1',
+        desc: '显示热门服务器在线状态',
+        category: 'function'
+    },
+    'skin-preview': {
+        name: '皮肤预览',
+        size: '1x2',
+        desc: '预览当前角色的皮肤效果',
+        category: 'function'
+    }
+};
+
+let installedWidgets = [];
+let draggedWidgetEl = null;
+let confirmCallback = null;
+
+function showLoading() {
+    document.getElementById('loading-overlay').classList.add('show');
+}
+
+function hideLoading() {
+    document.getElementById('loading-overlay').classList.remove('show');
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = 'toast ' + type + ' show';
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 2500);
+}
+
+function showConfirmModal(title, message, onConfirm) {
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-message').textContent = message;
+    document.getElementById('confirm-modal').classList.add('show');
+    confirmCallback = onConfirm;
+}
+
+function closeConfirmModal() {
+    document.getElementById('confirm-modal').classList.remove('show');
+    confirmCallback = null;
+}
+
+async function loadWidgetsPage() {
+    showLoading();
+    try {
+        const data = await window.simpmcAPI.getWidgets();
+        installedWidgets = data.widgets || [];
+        renderInstalledWidgets();
+        renderStoreWidgets();
+    } catch (error) {
+        console.error('加载小组件失败:', error);
+        showToast('加载小组件失败', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+function renderInstalledWidgets() {
+    const grid = document.getElementById('installed-widgets-grid');
+    
+    if (installedWidgets.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-installed">
+                <div class="empty-installed-icon">&#128203;</div>
+                <p class="empty-installed-text" data-i18n="widgets.no_installed">还没有安装任何小组件</p>
+            </div>
+        `;
+        return;
+    }
+    
+    grid.innerHTML = installedWidgets.map((widget, index) => {
+        const template = WIDGET_TEMPLATES[widget.type] || { name: widget.type, size: widget.size };
+        return `
+            <div class="installed-widget-card" data-widget-id="${widget.id}" draggable="true">
+                <div class="installed-widget-header">
+                    <div class="installed-widget-info">
+                        <div class="installed-widget-name">
+                            ${widget.name}
+                            <span class="widget-type-badge ${widget.enabled ? 'enabled' : 'disabled'}">
+                                ${widget.enabled ? '启用' : '禁用'}
+                            </span>
+                        </div>
+                        <div class="installed-widget-size">
+                            <span class="size-badge">${widget.size}</span>
+                            <span>${template.desc || ''}</span>
+                        </div>
+                    </div>
+                    <div class="installed-widget-actions">
+                        <button class="widget-action-btn move" title="拖动排序">&#8693;</button>
+                        <button class="widget-action-btn" onclick="toggleWidgetInstalled('${widget.id}')" title="${widget.enabled ? '禁用' : '启用'}">
+                            ${widget.enabled ? '&#128065;' : '&#128065;&#8413;'}
+                        </button>
+                        <button class="widget-action-btn delete" onclick="confirmRemoveWidget('${widget.id}')" title="删除">&#128465;</button>
+                    </div>
+                </div>
+                <div class="installed-widget-preview">
+                    预览区域
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    initInstalledWidgetDrag();
+}
+
+function renderStoreWidgets() {
+    const grid = document.getElementById('store-widgets-grid');
+    const installedTypes = installedWidgets.map(w => w.type);
+    
+    grid.innerHTML = Object.entries(WIDGET_TEMPLATES).map(([type, template]) => {
+        const isInstalled = installedTypes.includes(type);
+        return `
+            <div class="store-widget-card ${isInstalled ? 'installed' : ''}" onclick="${isInstalled ? '' : `addWidgetFromStore('${type}')`}">
+                <div class="store-widget-header">
+                    <span class="store-widget-name">${template.name}</span>
+                    <span class="store-widget-badge ${isInstalled ? 'installed' : ''}">
+                        ${isInstalled ? '已安装' : template.size}
+                    </span>
+                </div>
+                <p class="store-widget-desc">${template.desc}</p>
+                <div class="store-widget-meta">
+                    <span>分类: ${template.category}</span>
+                    ${!isInstalled ? '<button class="store-widget-add-btn">添加</button>' : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function initInstalledWidgetDrag() {
+    const cards = document.querySelectorAll('.installed-widget-card');
+    
+    cards.forEach(card => {
+        card.addEventListener('dragstart', handleInstalledDragStart);
+        card.addEventListener('dragend', handleInstalledDragEnd);
+        card.addEventListener('dragover', handleInstalledDragOver);
+        card.addEventListener('drop', handleInstalledDrop);
+        card.addEventListener('dragleave', handleInstalledDragLeave);
+    });
+}
+
+function handleInstalledDragStart(e) {
+    draggedWidgetEl = this;
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', this.dataset.widgetId);
+}
+
+function handleInstalledDragEnd(e) {
+    this.classList.remove('dragging');
+    document.querySelectorAll('.installed-widget-card').forEach(card => {
+        card.classList.remove('drag-over');
+    });
+    draggedWidgetEl = null;
+}
+
+function handleInstalledDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (this !== draggedWidgetEl) {
+        this.classList.add('drag-over');
+    }
+}
+
+function handleInstalledDragLeave(e) {
+    this.classList.remove('drag-over');
+}
+
+function handleInstalledDrop(e) {
+    e.preventDefault();
+    this.classList.remove('drag-over');
+    
+    if (this === draggedWidgetEl) return;
+    
+    const draggedId = draggedWidgetEl.dataset.widgetId;
+    const targetId = this.dataset.widgetId;
+    
+    const draggedIndex = installedWidgets.findIndex(w => w.id === draggedId);
+    const targetIndex = installedWidgets.findIndex(w => w.id === targetId);
+    
+    if (draggedIndex !== -1 && targetIndex !== -1) {
+        [installedWidgets[draggedIndex], installedWidgets[targetIndex]] = 
+            [installedWidgets[targetIndex], installedWidgets[draggedIndex]];
+        saveWidgetsOrder();
+        renderInstalledWidgets();
+    }
+}
+
+async function saveWidgetsOrder() {
+    try {
+        await window.simpmcAPI.saveWidgets(installedWidgets);
+    } catch (error) {
+        console.error('保存顺序失败:', error);
+    }
+}
+
+async function toggleWidgetInstalled(widgetId) {
+    const widget = installedWidgets.find(w => w.id === widgetId);
+    if (widget) {
+        widget.enabled = !widget.enabled;
+        try {
+            await window.simpmcAPI.saveWidgets(installedWidgets);
+            renderInstalledWidgets();
+            showToast(widget.enabled ? '已启用' : '已禁用', 'success');
+        } catch (error) {
+            console.error('切换状态失败:', error);
+            showToast('操作失败', 'error');
+        }
+    }
+}
+
+function confirmRemoveWidget(widgetId) {
+    const widget = installedWidgets.find(w => w.id === widgetId);
+    if (!widget) return;
+    
+    showConfirmModal(
+        '删除小组件',
+        `确定要删除 "${widget.name}" 吗？删除后可以在商店重新添加。`,
+        async () => {
+            try {
+                await window.simpmcAPI.removeWidget(widgetId);
+                installedWidgets = installedWidgets.filter(w => w.id !== widgetId);
+                renderInstalledWidgets();
+                renderStoreWidgets();
+                showToast('已删除', 'success');
+            } catch (error) {
+                console.error('删除失败:', error);
+                showToast('删除失败', 'error');
+            }
+            closeConfirmModal();
+        }
+    );
+}
+
+async function addWidgetFromStore(type) {
+    const template = WIDGET_TEMPLATES[type];
+    if (!template) return;
+    
+    const newWidget = {
+        id: 'widget_' + Date.now(),
+        type: type,
+        name: template.name,
+        size: template.size,
+        enabled: true,
+        config: {}
+    };
+    
+    try {
+        await window.simpmcAPI.addWidget(newWidget);
+        installedWidgets.push(newWidget);
+        renderInstalledWidgets();
+        renderStoreWidgets();
+        showToast(`已添加 ${template.name}`, 'success');
+    } catch (error) {
+        console.error('添加失败:', error);
+        showToast('添加失败', 'error');
+    }
+}
+
+document.getElementById('confirm-btn').addEventListener('click', () => {
+    if (confirmCallback) {
+        confirmCallback();
+    }
+});
+
+document.getElementById('add-widget-btn').addEventListener('click', () => {
+    document.querySelector('.widgets-store-section').scrollIntoView({ behavior: 'smooth' });
+});
+
+loadWidgetsPage();
+</script>

@@ -561,6 +561,342 @@
     color: rgba(255, 255, 255, 0.5);
     margin-top: 2px;
 }
+
+/* 小组件系统样式 */
+.widgets-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.widget-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.3s ease;
+    cursor: move;
+    position: relative;
+    min-height: 100px;
+}
+
+.widget-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.widget-card.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+    z-index: 1000;
+}
+
+.widget-card.drag-over {
+    border-color: #1976D2;
+    border-style: dashed;
+    background: rgba(25, 118, 210, 0.1);
+}
+
+.widget-card.size-1x1 { grid-column: span 1; grid-row: span 1; }
+.widget-card.size-1x2 { grid-column: span 1; grid-row: span 2; }
+.widget-card.size-2x1 { grid-column: span 2; grid-row: span 1; }
+.widget-card.size-2x2 { grid-column: span 2; grid-row: span 2; }
+
+.widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.widget-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+}
+
+.widget-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.widget-card:hover .widget-actions {
+    opacity: 1;
+}
+
+.widget-action-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.widget-action-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.widget-action-btn.delete:hover {
+    background: rgba(244, 67, 54, 0.3);
+    color: #f44336;
+}
+
+.widget-content {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 13px;
+}
+
+.widget-placeholder {
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 14px;
+}
+
+.widgets-manage-btn {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    padding: 10px 20px;
+    background: rgba(25, 118, 210, 0.9);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.widgets-manage-btn:hover {
+    background: rgba(25, 118, 210, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
+}
+
+.widget-welcome h3 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    color: white;
+}
+
+.widget-welcome p {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.widget-quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.quick-action-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quick-action-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(4px);
+}
+
+.quick-action-icon {
+    font-size: 18px;
+}
+
+.widget-recent-versions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.recent-version-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+}
+
+.version-icon {
+    font-size: 16px;
+}
+
+.version-name {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.widget-news {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.news-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.news-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.news-tag {
+    font-size: 10px;
+    padding: 2px 6px;
+    background: rgba(25, 118, 210, 0.3);
+    border-radius: 4px;
+    color: #6db3f2;
+}
+
+.news-title {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.widget-server-status {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.server-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+}
+
+.server-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.server-status-dot.online {
+    background: #4CAF50;
+    box-shadow: 0 0 6px rgba(76, 175, 80, 0.5);
+}
+
+.server-status-dot.offline {
+    background: #f44336;
+}
+
+.server-name {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    flex: 1;
+}
+
+.server-players {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.widget-skin-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.skin-preview-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    image-rendering: pixelated;
+    background-repeat: no-repeat;
+    background-size: 256px 256px;
+    background-position: -32px -32px;
+}
+
+.skin-preview-btn {
+    padding: 6px 16px;
+    background: rgba(25, 118, 210, 0.2);
+    border: 1px solid #1976D2;
+    border-radius: 6px;
+    color: #1976D2;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.skin-preview-btn:hover {
+    background: rgba(25, 118, 210, 0.4);
+}
+
+.widget-card.disabled {
+    opacity: 0.5;
+}
+
+.widget-card.disabled .widget-content {
+    filter: grayscale(0.5);
+}
+
+.widget-card.size-1x1 .widget-content {
+    font-size: 12px;
+}
+
+.widget-card.size-1x2 .widget-content {
+    font-size: 13px;
+}
+
+.widget-enter-animation {
+    animation: widgetEnter 0.3s ease;
+}
+
+@keyframes widgetEnter {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 </style>
 
 <div class="all-profiles-modal" id="all-profiles-modal">
@@ -608,13 +944,247 @@ onclick="showConfirmModal('不支持', '此版本的启动器不支持此功能�
     启动游戏
 </button>
 
+<div class="widgets-section">
+    <div class="widgets-grid" id="widgets-grid"></div>
+</div>
+
+<button class="widgets-manage-btn" onclick="switchPage('widgets')">
+    ⚙️ <span data-i18n="widgets.manage">管理小组件</span>
+</button>
+
 <script>
 let installedVersions = [];
+let widgets = [];
+let widgetPositions = {};
+let draggedWidget = null;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+
+const WIDGET_TEMPLATES = {
+    'welcome': {
+        name: '欢迎',
+        size: '2x1',
+        render: (config) => `
+            <div class="widget-welcome">
+                <h3>欢迎使用 SimpMC 启动器</h3>
+                <p>选择一个角色开始游戏吧！</p>
+            </div>
+        `
+    },
+    'quick-actions': {
+        name: '快捷操作',
+        size: '1x2',
+        render: (config) => `
+            <div class="widget-quick-actions">
+                <div class="quick-action-item" onclick="switchPage('discovery')">
+                    <span class="quick-action-icon">🌐</span>
+                    <span>发现</span>
+                </div>
+                <div class="quick-action-item" onclick="switchPage('settings')">
+                    <span class="quick-action-icon">⚙️</span>
+                    <span>设置</span>
+                </div>
+                <div class="quick-action-item" onclick="switchPage('profiles')">
+                    <span class="quick-action-icon">👤</span>
+                    <span>档案</span>
+                </div>
+            </div>
+        `
+    },
+    'recent-versions': {
+        name: '最近版本',
+        size: '1x1',
+        render: (config) => `
+            <div class="widget-recent-versions">
+                <div class="recent-version-item">
+                    <span class="version-icon">🎮</span>
+                    <span class="version-name">1.20.4</span>
+                </div>
+                <div class="recent-version-item">
+                    <span class="version-icon">🎮</span>
+                    <span class="version-name">1.19.2</span>
+                </div>
+            </div>
+        `
+    },
+    'news': {
+        name: 'Minecraft 资讯',
+        size: '2x1',
+        render: (config) => `
+            <div class="widget-news">
+                <div class="news-item">
+                    <span class="news-tag">新闻</span>
+                    <span class="news-title">Minecraft 1.21 更新预览</span>
+                </div>
+                <div class="news-item">
+                    <span class="news-tag">攻略</span>
+                    <span class="news-title">如何制作红石机器</span>
+                </div>
+            </div>
+        `
+    },
+    'server-status': {
+        name: '服务器状态',
+        size: '1x1',
+        render: (config) => `
+            <div class="widget-server-status">
+                <div class="server-item">
+                    <span class="server-status-dot online"></span>
+                    <span class="server-name">Hypixel</span>
+                    <span class="server-players">12.5k</span>
+                </div>
+                <div class="server-item">
+                    <span class="server-status-dot online"></span>
+                    <span class="server-name">2b2t</span>
+                    <span class="server-players">8.2k</span>
+                </div>
+            </div>
+        `
+    },
+    'skin-preview': {
+        name: '皮肤预览',
+        size: '1x2',
+        render: (config) => `
+            <div class="widget-skin-preview">
+                <div class="skin-preview-avatar" id="widget-skin-avatar"></div>
+                <button class="skin-preview-btn" onclick="switchPage('profiles')">更换皮肤</button>
+            </div>
+        `
+    }
+};
 
 async function loadHomePage() {
     await loadInstalledVersions();
+    await loadWidgets();
     renderCurrentVersion();
     updateLaunchButton();
+    renderWidgets();
+}
+
+async function loadWidgets() {
+    try {
+        const data = await window.simpmcAPI.getWidgets();
+        widgets = data.widgets || [];
+        widgetPositions = data.positions || {};
+    } catch (error) {
+        console.error('加载小组件失败:', error);
+        widgets = [];
+    }
+}
+
+function renderWidgets() {
+    const grid = document.getElementById('widgets-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = widgets.map(widget => {
+        const template = WIDGET_TEMPLATES[widget.type];
+        if (!template) return '';
+        
+        return `
+            <div class="widget-card size-${widget.size} ${widget.enabled ? '' : 'disabled'}" 
+                 data-widget-id="${widget.id}"
+                 draggable="true">
+                <div class="widget-header">
+                    <span class="widget-title">${widget.name}</span>
+                    <div class="widget-actions">
+                        <button class="widget-action-btn" onclick="toggleWidget('${widget.id}')" title="启用/禁用">
+                            ${widget.enabled ? '👁️' : '👁️‍🗨️'}
+                        </button>
+                        <button class="widget-action-btn delete" onclick="removeWidget('${widget.id}')" title="删除">🗑️</button>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    ${template.render(widget.config)}
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    initWidgetDrag();
+}
+
+function initWidgetDrag() {
+    const cards = document.querySelectorAll('.widget-card');
+    
+    cards.forEach(card => {
+        card.addEventListener('dragstart', handleDragStart);
+        card.addEventListener('dragend', handleDragEnd);
+        card.addEventListener('dragover', handleDragOver);
+        card.addEventListener('drop', handleDrop);
+        card.addEventListener('dragleave', handleDragLeave);
+    });
+}
+
+function handleDragStart(e) {
+    draggedWidget = this;
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', this.dataset.widgetId);
+}
+
+function handleDragEnd(e) {
+    this.classList.remove('dragging');
+    document.querySelectorAll('.widget-card').forEach(card => {
+        card.classList.remove('drag-over');
+    });
+    draggedWidget = null;
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (this !== draggedWidget) {
+        this.classList.add('drag-over');
+    }
+}
+
+function handleDragLeave(e) {
+    this.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    this.classList.remove('drag-over');
+    
+    if (this === draggedWidget) return;
+    
+    const draggedId = draggedWidget.dataset.widgetId;
+    const targetId = this.dataset.widgetId;
+    
+    const draggedIndex = widgets.findIndex(w => w.id === draggedId);
+    const targetIndex = widgets.findIndex(w => w.id === targetId);
+    
+    if (draggedIndex !== -1 && targetIndex !== -1) {
+        [widgets[draggedIndex], widgets[targetIndex]] = [widgets[targetIndex], widgets[draggedIndex]];
+        saveWidgetPositions();
+        renderWidgets();
+    }
+}
+
+async function toggleWidget(widgetId) {
+    const widget = widgets.find(w => w.id === widgetId);
+    if (widget) {
+        widget.enabled = !widget.enabled;
+        await window.simpmcAPI.saveWidgets(widgets);
+        renderWidgets();
+    }
+}
+
+async function removeWidget(widgetId) {
+    if (confirm('确定要删除这个小组件吗？')) {
+        widgets = widgets.filter(w => w.id !== widgetId);
+        await window.simpmcAPI.saveWidgets(widgets);
+        renderWidgets();
+    }
+}
+
+async function saveWidgetPositions() {
+    const positions = {};
+    widgets.forEach((widget, index) => {
+        positions[widget.id] = index;
+    });
+    await window.simpmcAPI.saveWidgetPositions(positions);
+    await window.simpmcAPI.saveWidgets(widgets);
 }
 
 function escapeHtml(text) {

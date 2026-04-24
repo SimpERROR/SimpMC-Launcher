@@ -55,24 +55,47 @@
         cursor: pointer;
     }
 
-    .carousel-slide img {
+    .carousel-slide.no-link {
+        cursor: default;
+    }
+
+    .carousel-image {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .carousel-image img {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform 0.3s ease;
     }
 
-    .carousel-overlay {
+    .carousel-slide:hover .carousel-image img {
+        transform: scale(1.05);
+    }
+
+    .carousel-content {
         position: absolute;
-        bottom: 0;
+        bottom: -100px;
         left: 0;
         right: 0;
-        padding: 40px 20px 20px;
-        background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+        padding: 50px 20px 20px;
+        transition: bottom 0.3s ease;
         backdrop-filter: blur(4px);
+        box-sizing: border-box;
+        height: 100px;
+        border-radius: 8px;
+    }
+
+    .carousel-slide:hover .carousel-content {
+        bottom: 0;
     }
 
     .carousel-title {
-        font-size: 16px;
+        font-size: 14px;
         font-weight: 600;
         color: white;
         margin-bottom: 4px;
@@ -81,6 +104,11 @@
     .carousel-desc {
         font-size: 12px;
         color: rgba(255, 255, 255, 0.8);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        border-radius: 8px;
     }
 
     .carousel-dots {
@@ -89,6 +117,7 @@
         right: 20px;
         display: flex;
         gap: 8px;
+        z-index: 10;
     }
 
     .carousel-dot {
@@ -123,6 +152,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        z-index: 10;
     }
 
     .carousel-container:hover .carousel-arrow {
@@ -149,10 +179,56 @@
         text-align: center;
         color: rgba(255, 255, 255, 0.6);
         font-size: 14px;
+        z-index: 5;
     }
 
     .carousel-error {
         color: rgba(255, 100, 100, 0.8);
+    }
+
+    .widgets-store {
+        margin-top: 20px;
+        padding: 14px;
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #2c80d4;
+        color: white;
+        transition: padding 0.3s ease, background-color 0.3s ease;
+        cursor: pointer;
+    }
+
+    .widgets-store:hover {
+        padding: 18px;
+        background-color: #639dd7;
+    }
+
+    .widgets-store-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .widgets-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        flex: 1;
+    }
+
+    .widgets_description {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.8);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .widgets_img {
+        width: 24px;
+        height: 24px;
+        filter: brightness(0) invert(1);
     }
 </style>
 
@@ -178,8 +254,14 @@
         </div>
         <p class="info-text" data-i18n="discovery.info.description"></p>
     </div>
+
+    <div class="widgets-store" onclick="switchPage('widgets')">
+        <div class="widgets-store-title">
+            <div class="widgets-text">
+                <span data-i18n="discovery.widgets.title"></span>
+                <span data-i18n="discovery.widgets.description" class="widgets_description"></span>
+            </div>
+            <img src="../assets/icon/arrow-right-solid-full.svg" alt="widgets" class="widgets_img">
+        </div>
+    </div>
 </div>
-
-<script>
-
-</script>

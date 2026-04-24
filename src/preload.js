@@ -56,5 +56,11 @@ contextBridge.exposeInMainWorld('simpmcAPI', {
     skipToNextMusic: () => ipcRenderer.invoke('skip_to_next_music'),
     onMusicEnded: (callback) => ipcRenderer.on('music_ended', callback),
     readAudioFile: (filePath) => ipcRenderer.invoke('read_audio_file', filePath),
-    requestPlayMusic: () => ipcRenderer.invoke('request_play_music')
+    requestPlayMusic: () => ipcRenderer.invoke('request_play_music'),
+    getWidgets: () => ipcRenderer.invoke('get_widgets'),
+    saveWidgets: (widgets) => ipcRenderer.invoke('save_widgets', widgets),
+    saveWidgetPositions: (positions) => ipcRenderer.invoke('save_widget_positions', positions),
+    addWidget: (widget) => ipcRenderer.invoke('add_widget', widget),
+    removeWidget: (widgetId) => ipcRenderer.invoke('remove_widget', widgetId),
+    updateWidget: (widgetId, updates) => ipcRenderer.invoke('update_widget', widgetId, updates)
 });

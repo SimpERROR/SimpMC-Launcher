@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_图层_1" data-name="图层 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1000 255">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #0087ff;
+        font-family: NotoSansJP-Black, 'Noto Sans JP';
+        font-size: 48px;
+        font-variation-settings: 'wght' 900;
+        font-weight: 800;
+      }
+
+      .cls-2 {
+        font-family: AlimamaFangYuanTiVF-BoldRound, 'Alimama FangYuanTi VF';
+        font-size: 27.04px;
+        font-variation-settings: 'wght' 700, 'BEVL' 100;
+        font-weight: 700;
+      }
+
+      .cls-2, .cls-3 {
+        fill: #fff;
+      }
+
+      .cls-4 {
+        fill: url(#_未命名的渐变_40);
+      }
+
+      .cls-5 {
+        fill: url(#_未命名的渐变_2);
+      }
+
+      .cls-6 {
+        letter-spacing: -.25em;
+      }
+
+      .cls-7 {
+        fill: #a4c6fc;
+      }
+
+      .cls-3 {
+        font-family: 'AlibabaPuHuiTi_2_45_Light', 'Alibaba PuHuiTi 2.0';
+        font-size: 40px;
+      }
+    </style>
+    <linearGradient id="_未命名的渐变_40" data-name="未命名的渐变 40" x1="680.21" y1="-184.63" x2="319.79" y2="439.63" gradientTransform="translate(0 255) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#94a7ff"/>
+      <stop offset="1" stop-color="#7fc5ff"/>
+    </linearGradient>
+    <linearGradient id="_未命名的渐变_2" data-name="未命名的渐变 2" x1="265.11" y1="74.08" x2="294.73" y2="103.71" gradientTransform="translate(0 255) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset=".09" stop-color="#4488f5"/>
+      <stop offset=".92" stop-color="#67c9f5"/>
+    </linearGradient>
+  </defs>
+  <rect class="cls-4" width="1000" height="255"/>
+  <text class="cls-1" transform="translate(43.46 110.31)"><tspan x="0" y="0">Ciallo～(</tspan><tspan class="cls-6" x="206.16" y="0">∠・</tspan><tspan x="278.16" y="0">ω&lt; )⌒☆</tspan></text>
+  <text class="cls-3" transform="translate(45.64 179.71)"><tspan x="0" y="0" xml:space="preserve">感谢您选择                    启动器！</tspan></text>
+  <rect class="cls-7" x="252.89" y="142" width="177.11" height="48" rx="12" ry="12"/>
+  <g>
+    <g id="_图层_1-2" data-name=" 图层 1-2">
+      <path class="cls-5" d="m289.71,149.2h-19.58c-3.91,0-7.11,3.2-7.11,7.11v19.58c0,3.91,3.2,7.11,7.11,7.11h19.58c3.91,0,7.11-3.2,7.11-7.11v-19.58c0-3.91-3.2-7.11-7.11-7.11Zm-19.41,28.51l-2.35,1.9,3.8-7.15-6.56-6.65,15.43-5.48-8.69,6.88,6.34,4.53-7.97,5.98h0Zm8.95-6.27l8.69-6.88-6.34-4.53,7.97-5.98,2.35-1.9-3.8,7.15,6.56,6.65-15.43,5.48h0Z"/>
+    </g>
+    <text class="cls-2" transform="translate(307.53 175.25)"><tspan x="0" y="0">SimpMC</tspan></text>
+  </g>
+</svg>

@@ -1588,3 +1588,73 @@ ipcMain.handle('select_install_directory', async () => {
     }
     return null;
 });
+
+// 小组件管理 IPC
+const DEFAULT_WIDGETS = [
+    {
+        id: 'welcome',
+        type: 'welcome',
+        name: '欢迎',
+        size: '2x1',
+        x: 0, y: 0,
+        enabled: true,
+        config: {}
+    },
+    {
+        id: 'quick-actions',
+        type: 'quick-actions',
+        name: '快捷操作',
+        size: '1x2',
+        x: 2, y: 0,
+        enabled: true,
+        config: {}
+    }
+];
+
+ipcMain.handle('get_widgets', () => {
+    if (!store) return { widgets: DEFAULT_WIDGETS, positions: {} };
+    return {
+        widgets: store.get('widgets', DEFAULT_WIDGETS),
+        positions: store.get('widgetPositions', {})
+    };
+});
+
+ipcMain.handle('save_widgets', (event, widgets) => {
+    if (!store) return false;
+    store.set('widgets', widgets);
+    return true;
+});
+
+ipcMain.handle('save_widget_positions', (event, positions) => {
+    if (!store) return false;
+    store.set('widgetPositions', positions);
+    return true;
+});
+
+ipcMain.handle('add_widget', (event, widget) => {
+    if (!store) return false;
+    const widgets = store.get('widgets', DEFAULT_WIDGETS);
+    widgets.push(widget);
+    store.set('widgets', widgets);
+    return true;
+});
+
+ipcMain.handle('remove_widget', (event, widgetId) => {
+    if (!store) return false;
+    const widgets = store.get('widgets', DEFAULT_WIDGETS);
+    const filtered = widgets.filter(w => w.id !== widgetId);
+    store.set('widgets', filtered);
+    return true;
+});
+
+ipcMain.handle('update_widget', (event, widgetId, updates) => {
+    if (!store) return false;
+    const widgets = store.get('widgets', DEFAULT_WIDGETS);
+    const index = widgets.findIndex(w => w.id === widgetId);
+    if (index !== -1) {
+        widgets[index] = { ...widgets[index], ...updates };
+        store.set('widgets', widgets);
+        return true;
+    }
+    return false;
+});
