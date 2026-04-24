@@ -72,6 +72,8 @@ function updateCarousel() {
     const track = document.getElementById('carousel-track');
     const dots = document.querySelectorAll('.carousel-dot');
 
+    if (!track || carouselData.length === 0) return;
+
     track.style.transform = `translateX(-${currentSlide * 100}%)`;
     dots.forEach((dot, index) => {
         dot.classList.toggle('active', index === currentSlide);

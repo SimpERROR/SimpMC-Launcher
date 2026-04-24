@@ -960,101 +960,9 @@ let draggedWidget = null;
 let dragOffsetX = 0;
 let dragOffsetY = 0;
 
-const WIDGET_TEMPLATES = {
-    'welcome': {
-        name: '欢迎',
-        size: '2x1',
-        render: (config) => `
-            <div class="widget-welcome">
-                <h3>欢迎使用 SimpMC 启动器</h3>
-                <p>选择一个角色开始游戏吧！</p>
-            </div>
-        `
-    },
-    'quick-actions': {
-        name: '快捷操作',
-        size: '1x2',
-        render: (config) => `
-            <div class="widget-quick-actions">
-                <div class="quick-action-item" onclick="switchPage('discovery')">
-                    <span class="quick-action-icon">🌐</span>
-                    <span>发现</span>
-                </div>
-                <div class="quick-action-item" onclick="switchPage('settings')">
-                    <span class="quick-action-icon">⚙️</span>
-                    <span>设置</span>
-                </div>
-                <div class="quick-action-item" onclick="switchPage('profiles')">
-                    <span class="quick-action-icon">👤</span>
-                    <span>档案</span>
-                </div>
-            </div>
-        `
-    },
-    'recent-versions': {
-        name: '最近版本',
-        size: '1x1',
-        render: (config) => `
-            <div class="widget-recent-versions">
-                <div class="recent-version-item">
-                    <span class="version-icon">🎮</span>
-                    <span class="version-name">1.20.4</span>
-                </div>
-                <div class="recent-version-item">
-                    <span class="version-icon">🎮</span>
-                    <span class="version-name">1.19.2</span>
-                </div>
-            </div>
-        `
-    },
-    'news': {
-        name: 'Minecraft 资讯',
-        size: '2x1',
-        render: (config) => `
-            <div class="widget-news">
-                <div class="news-item">
-                    <span class="news-tag">新闻</span>
-                    <span class="news-title">Minecraft 1.21 更新预览</span>
-                </div>
-                <div class="news-item">
-                    <span class="news-tag">攻略</span>
-                    <span class="news-title">如何制作红石机器</span>
-                </div>
-            </div>
-        `
-    },
-    'server-status': {
-        name: '服务器状态',
-        size: '1x1',
-        render: (config) => `
-            <div class="widget-server-status">
-                <div class="server-item">
-                    <span class="server-status-dot online"></span>
-                    <span class="server-name">Hypixel</span>
-                    <span class="server-players">12.5k</span>
-                </div>
-                <div class="server-item">
-                    <span class="server-status-dot online"></span>
-                    <span class="server-name">2b2t</span>
-                    <span class="server-players">8.2k</span>
-                </div>
-            </div>
-        `
-    },
-    'skin-preview': {
-        name: '皮肤预览',
-        size: '1x2',
-        render: (config) => `
-            <div class="widget-skin-preview">
-                <div class="skin-preview-avatar" id="widget-skin-avatar"></div>
-                <button class="skin-preview-btn" onclick="switchPage('profiles')">更换皮肤</button>
-            </div>
-        `
-    }
-};
-
 async function loadHomePage() {
     await loadInstalledVersions();
+    await loadWidgetTemplates();
     await loadWidgets();
     renderCurrentVersion();
     updateLaunchButton();
@@ -1075,31 +983,49 @@ async function loadWidgets() {
 function renderWidgets() {
     const grid = document.getElementById('widgets-grid');
     if (!grid) return;
-    
+
     grid.innerHTML = widgets.map(widget => {
         const template = WIDGET_TEMPLATES[widget.type];
         if (!template) return '';
-        
+
+        const content = template.render ? template.render(widget.config) : (template.html || '');
+        const sizeClass = `size-${widget.size || '1x1'}`;
+
         return `
-            <div class="widget-card size-${widget.size} ${widget.enabled ? '' : 'disabled'}" 
+            <div class="widget-card ${sizeClass} ${widget.enabled ? '' : 'disabled'}"
                  data-widget-id="${widget.id}"
                  draggable="true">
                 <div class="widget-header">
                     <span class="widget-title">${widget.name}</span>
                     <div class="widget-actions">
-                        <button class="widget-action-btn" onclick="toggleWidget('${widget.id}')" title="启用/禁用">
-                            ${widget.enabled ? '👁️' : '👁️‍🗨️'}
+                        <button class="widget-action-btn widget-toggle-btn" data-widget-id="${widget.id}" title="启用/禁用">
+                                ${widget.enabled ?
+                                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>' :
+                                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>'
+                                }
                         </button>
-                        <button class="widget-action-btn delete" onclick="removeWidget('${widget.id}')" title="删除">🗑️</button>
+                        <button class="widget-action-btn delete widget-remove-btn" data-widget-id="${widget.id}" title="删除">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                        </button>
                     </div>
                 </div>
                 <div class="widget-content">
-                    ${template.render(widget.config)}
+                    ${content}
                 </div>
             </div>
         `;
     }).join('');
-    
+
+    document.querySelectorAll('.widget-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', () => toggleWidget(btn.dataset.widgetId));
+    });
+    document.querySelectorAll('.widget-remove-btn').forEach(btn => {
+        btn.addEventListener('click', () => removeWidget(btn.dataset.widgetId));
+    });
+
     initWidgetDrag();
 }
 

@@ -320,6 +320,7 @@
         opacity: 0;
         visibility: hidden;
         transition: all 0.2s;
+        border-radius: 12px;
     }
 
     .loading-overlay.show {
@@ -504,18 +505,18 @@
 <div class="page-body">
     <div class="widgets-section-header">
         <h2 class="section-title" data-i18n="widgets.installed">已安装</h2>
-        <button class="add-widget-btn" id="add-widget-btn">
+        <!-- <button class="add-widget-btn" id="add-widget-btn">
             <span>+</span>
             <span data-i18n="widgets.add">添加小组件</span>
-        </button>
+        </button> -->
     </div>
 
     <div class="widgets-installed-section">
-        <div class="installed-widgets-grid" id="installed-widgets-grid"></div>
         <div class="drag-hint">
             <span class="drag-hint-icon">&#8693;</span>
             <span data-i18n="widgets.drag_hint">拖拽可调整顺序</span>
         </div>
+        <div class="installed-widgets-grid" id="installed-widgets-grid"></div>
     </div>
 
     <div class="widgets-store-section">
@@ -535,311 +536,8 @@
         <h3 class="confirm-title" id="confirm-title"></h3>
         <p class="confirm-message" id="confirm-message"></p>
         <div class="confirm-actions">
-            <button class="confirm-btn cancel" onclick="closeConfirmModal()" data-i18n="common.cancel">取消</button>
+            <button class="confirm-btn cancel" data-i18n="common.cancel">取消</button>
             <button class="confirm-btn danger" id="confirm-btn" data-i18n="common.confirm">确认</button>
         </div>
     </div>
 </div>
-
-<script>
-const WIDGET_TEMPLATES = {
-    'welcome': {
-        name: '欢迎',
-        size: '2x1',
-        desc: '显示欢迎信息和快捷引导',
-        category: 'information'
-    },
-    'quick-actions': {
-        name: '快捷操作',
-        size: '1x2',
-        desc: '快速访问常用功能',
-        category: 'function'
-    },
-    'recent-versions': {
-        name: '最近版本',
-        size: '1x1',
-        desc: '显示最近玩过的游戏版本',
-        category: 'information'
-    },
-    'news': {
-        name: '资讯',
-        size: '2x1',
-        desc: '显示最新的 Minecraft 新闻',
-        category: 'information'
-    },
-    'server-status': {
-        name: '服务器状态',
-        size: '1x1',
-        desc: '显示热门服务器在线状态',
-        category: 'function'
-    },
-    'skin-preview': {
-        name: '皮肤预览',
-        size: '1x2',
-        desc: '预览当前角色的皮肤效果',
-        category: 'function'
-    }
-};
-
-let installedWidgets = [];
-let draggedWidgetEl = null;
-let confirmCallback = null;
-
-function showLoading() {
-    document.getElementById('loading-overlay').classList.add('show');
-}
-
-function hideLoading() {
-    document.getElementById('loading-overlay').classList.remove('show');
-}
-
-function showToast(message, type = 'info') {
-    const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.className = 'toast ' + type + ' show';
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 2500);
-}
-
-function showConfirmModal(title, message, onConfirm) {
-    document.getElementById('confirm-title').textContent = title;
-    document.getElementById('confirm-message').textContent = message;
-    document.getElementById('confirm-modal').classList.add('show');
-    confirmCallback = onConfirm;
-}
-
-function closeConfirmModal() {
-    document.getElementById('confirm-modal').classList.remove('show');
-    confirmCallback = null;
-}
-
-async function loadWidgetsPage() {
-    showLoading();
-    try {
-        const data = await window.simpmcAPI.getWidgets();
-        installedWidgets = data.widgets || [];
-        renderInstalledWidgets();
-        renderStoreWidgets();
-    } catch (error) {
-        console.error('加载小组件失败:', error);
-        showToast('加载小组件失败', 'error');
-    } finally {
-        hideLoading();
-    }
-}
-
-function renderInstalledWidgets() {
-    const grid = document.getElementById('installed-widgets-grid');
-    
-    if (installedWidgets.length === 0) {
-        grid.innerHTML = `
-            <div class="empty-installed">
-                <div class="empty-installed-icon">&#128203;</div>
-                <p class="empty-installed-text" data-i18n="widgets.no_installed">还没有安装任何小组件</p>
-            </div>
-        `;
-        return;
-    }
-    
-    grid.innerHTML = installedWidgets.map((widget, index) => {
-        const template = WIDGET_TEMPLATES[widget.type] || { name: widget.type, size: widget.size };
-        return `
-            <div class="installed-widget-card" data-widget-id="${widget.id}" draggable="true">
-                <div class="installed-widget-header">
-                    <div class="installed-widget-info">
-                        <div class="installed-widget-name">
-                            ${widget.name}
-                            <span class="widget-type-badge ${widget.enabled ? 'enabled' : 'disabled'}">
-                                ${widget.enabled ? '启用' : '禁用'}
-                            </span>
-                        </div>
-                        <div class="installed-widget-size">
-                            <span class="size-badge">${widget.size}</span>
-                            <span>${template.desc || ''}</span>
-                        </div>
-                    </div>
-                    <div class="installed-widget-actions">
-                        <button class="widget-action-btn move" title="拖动排序">&#8693;</button>
-                        <button class="widget-action-btn" onclick="toggleWidgetInstalled('${widget.id}')" title="${widget.enabled ? '禁用' : '启用'}">
-                            ${widget.enabled ? '&#128065;' : '&#128065;&#8413;'}
-                        </button>
-                        <button class="widget-action-btn delete" onclick="confirmRemoveWidget('${widget.id}')" title="删除">&#128465;</button>
-                    </div>
-                </div>
-                <div class="installed-widget-preview">
-                    预览区域
-                </div>
-            </div>
-        `;
-    }).join('');
-    
-    initInstalledWidgetDrag();
-}
-
-function renderStoreWidgets() {
-    const grid = document.getElementById('store-widgets-grid');
-    const installedTypes = installedWidgets.map(w => w.type);
-    
-    grid.innerHTML = Object.entries(WIDGET_TEMPLATES).map(([type, template]) => {
-        const isInstalled = installedTypes.includes(type);
-        return `
-            <div class="store-widget-card ${isInstalled ? 'installed' : ''}" onclick="${isInstalled ? '' : `addWidgetFromStore('${type}')`}">
-                <div class="store-widget-header">
-                    <span class="store-widget-name">${template.name}</span>
-                    <span class="store-widget-badge ${isInstalled ? 'installed' : ''}">
-                        ${isInstalled ? '已安装' : template.size}
-                    </span>
-                </div>
-                <p class="store-widget-desc">${template.desc}</p>
-                <div class="store-widget-meta">
-                    <span>分类: ${template.category}</span>
-                    ${!isInstalled ? '<button class="store-widget-add-btn">添加</button>' : ''}
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-function initInstalledWidgetDrag() {
-    const cards = document.querySelectorAll('.installed-widget-card');
-    
-    cards.forEach(card => {
-        card.addEventListener('dragstart', handleInstalledDragStart);
-        card.addEventListener('dragend', handleInstalledDragEnd);
-        card.addEventListener('dragover', handleInstalledDragOver);
-        card.addEventListener('drop', handleInstalledDrop);
-        card.addEventListener('dragleave', handleInstalledDragLeave);
-    });
-}
-
-function handleInstalledDragStart(e) {
-    draggedWidgetEl = this;
-    this.classList.add('dragging');
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', this.dataset.widgetId);
-}
-
-function handleInstalledDragEnd(e) {
-    this.classList.remove('dragging');
-    document.querySelectorAll('.installed-widget-card').forEach(card => {
-        card.classList.remove('drag-over');
-    });
-    draggedWidgetEl = null;
-}
-
-function handleInstalledDragOver(e) {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    if (this !== draggedWidgetEl) {
-        this.classList.add('drag-over');
-    }
-}
-
-function handleInstalledDragLeave(e) {
-    this.classList.remove('drag-over');
-}
-
-function handleInstalledDrop(e) {
-    e.preventDefault();
-    this.classList.remove('drag-over');
-    
-    if (this === draggedWidgetEl) return;
-    
-    const draggedId = draggedWidgetEl.dataset.widgetId;
-    const targetId = this.dataset.widgetId;
-    
-    const draggedIndex = installedWidgets.findIndex(w => w.id === draggedId);
-    const targetIndex = installedWidgets.findIndex(w => w.id === targetId);
-    
-    if (draggedIndex !== -1 && targetIndex !== -1) {
-        [installedWidgets[draggedIndex], installedWidgets[targetIndex]] = 
-            [installedWidgets[targetIndex], installedWidgets[draggedIndex]];
-        saveWidgetsOrder();
-        renderInstalledWidgets();
-    }
-}
-
-async function saveWidgetsOrder() {
-    try {
-        await window.simpmcAPI.saveWidgets(installedWidgets);
-    } catch (error) {
-        console.error('保存顺序失败:', error);
-    }
-}
-
-async function toggleWidgetInstalled(widgetId) {
-    const widget = installedWidgets.find(w => w.id === widgetId);
-    if (widget) {
-        widget.enabled = !widget.enabled;
-        try {
-            await window.simpmcAPI.saveWidgets(installedWidgets);
-            renderInstalledWidgets();
-            showToast(widget.enabled ? '已启用' : '已禁用', 'success');
-        } catch (error) {
-            console.error('切换状态失败:', error);
-            showToast('操作失败', 'error');
-        }
-    }
-}
-
-function confirmRemoveWidget(widgetId) {
-    const widget = installedWidgets.find(w => w.id === widgetId);
-    if (!widget) return;
-    
-    showConfirmModal(
-        '删除小组件',
-        `确定要删除 "${widget.name}" 吗？删除后可以在商店重新添加。`,
-        async () => {
-            try {
-                await window.simpmcAPI.removeWidget(widgetId);
-                installedWidgets = installedWidgets.filter(w => w.id !== widgetId);
-                renderInstalledWidgets();
-                renderStoreWidgets();
-                showToast('已删除', 'success');
-            } catch (error) {
-                console.error('删除失败:', error);
-                showToast('删除失败', 'error');
-            }
-            closeConfirmModal();
-        }
-    );
-}
-
-async function addWidgetFromStore(type) {
-    const template = WIDGET_TEMPLATES[type];
-    if (!template) return;
-    
-    const newWidget = {
-        id: 'widget_' + Date.now(),
-        type: type,
-        name: template.name,
-        size: template.size,
-        enabled: true,
-        config: {}
-    };
-    
-    try {
-        await window.simpmcAPI.addWidget(newWidget);
-        installedWidgets.push(newWidget);
-        renderInstalledWidgets();
-        renderStoreWidgets();
-        showToast(`已添加 ${template.name}`, 'success');
-    } catch (error) {
-        console.error('添加失败:', error);
-        showToast('添加失败', 'error');
-    }
-}
-
-document.getElementById('confirm-btn').addEventListener('click', () => {
-    if (confirmCallback) {
-        confirmCallback();
-    }
-});
-
-document.getElementById('add-widget-btn').addEventListener('click', () => {
-    document.querySelector('.widgets-store-section').scrollIntoView({ behavior: 'smooth' });
-});
-
-loadWidgetsPage();
-</script>

@@ -566,6 +566,8 @@ async function switchPage(pageName) {
             loadPersonalizationPage();
         } else if (pageName === 'discovery') {
             loadCarousel()        
+        } else if (pageName === 'widgets') {
+            loadWidgetsPage();
         }
     } catch (error) {
         console.error('Error loading page:', error);

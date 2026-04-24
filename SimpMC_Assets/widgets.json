@@ -1,0 +1,12 @@
+{
+  "widgets": [
+    {
+      "type": "development",
+      "name": "测试",
+      "size": "1x1",
+      "desc": "这是一个小组件",
+      "category": "information",
+      "html": "<div><h3>测试小组件</h3><p>这是一个小组件</p></div>"
+    }
+  ]
+}
