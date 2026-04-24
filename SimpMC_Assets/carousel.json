@@ -10,17 +10,17 @@
         },
         {
             "id": 2,
-            "image_url": " https://raw.githubusercontent.com/SimpERROR/SimpMC_Launcher/main/SimpMC_Assets/images/Pic2.svg",
+            "image_url": " https://raw.githubusercontent.com/SimpERROR/SimpMC_Launcher/refs/heads/main/SimpMC_Assets/images/Pic2.svg",
             "link": "",
             "title": "小组件商店已上线",
             "desc": "现在，你可以安装小组件了！"
         },
         {
             "id": 3,
-            "image_url": " https://raw.githubusercontent.com/SimpERROR/SimpMC_Launcher/main/SimpMC_Assets/images/Pic3.svg",
+            "image_url": " https://raw.githubusercontent.com/SimpERROR/SimpMC_Launcher/refs/heads/main/SimpMC_Assets/images/Pic3.svg",
             "link": "",
             "title": "感谢您选择 SimpMC 启动器！",
-            "desc": "今后也请多多关照了！"
+            "desc": "今后也请多多关照."
         }
     ]
 }
