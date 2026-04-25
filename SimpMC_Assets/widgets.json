@@ -63,7 +63,7 @@
       "desc": "显示实时天气信息",
       "category": "information",
       "version": "1.0.0",
-      "html": "<div class=\"weather-widget\"><div class=\"weather-icon\">☀️</div><div class=\"weather-info\"><div class=\"weather-temp\">--°C</div><div class=\"weather-desc\">加载中...</div></div></div>",
+      "html": "<div class=\"weather-widget\"><div class=\"weather-icon\">☀️</div><br><div class=\"weather-info\"><div class=\"weather-temp\">--°C</div><div class=\"weather-desc\">加载中...</div></div></div>",
       "styles": ".weather-widget { display: flex; align-items: center; gap: 16px; padding: 16px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); height: 100%; box-sizing: border-box; } .weather-icon { font-size: 48px; } .weather-info { flex: 1; } .weather-temp { font-size: 32px; font-weight: bold; color: #fff; } .weather-desc { font-size: 14px; color: rgba(255,255,255,0.9); margin-top: 4px; }",
       "config": [
         {
