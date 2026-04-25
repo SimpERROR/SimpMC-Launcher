@@ -2,11 +2,117 @@
   "widgets": [
     {
       "type": "development",
-      "name": "测试",
+      "author": "SimpERROR_",
+      "name": "测试小组件",
       "size": "1x1",
-      "desc": "这是一个小组件",
+      "desc": "这是一个支持完全自定义的测试小组件",
+      "category": "development",
+      "version": "1.0.0",
+      "html": "<div class=\"dev-widget\"><h3>测试</h3><p>这是一个自定义小组件</p></div>",
+      "styles": ".dev-widget { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 12px; border-radius: 8px; height: 100%; } .dev-widget h3 { margin: 0 0 8px; color: #fff; font-size: 14px; } .dev-widget p { margin: 0; color: rgba(255,255,255,0.8); font-size: 12px; }",
+      "config": [
+        {
+          "key": "title",
+          "label": "标题",
+          "type": "text",
+          "default": "测试"
+        },
+        {
+          "key": "bgColor",
+          "label": "背景颜色",
+          "type": "color",
+          "default": "#667eea"
+        }
+      ],
+      "permissions": ["network", "storage"],
+      "render": "return `<div class='custom-render'><h3>${config.title || '默认标题'}</h3><p>大小: ${widget.size}</p></div>`;",
+      "scripts": "console.log('Widget scripts executed:', config, widget); const el = contentEl; el.querySelector('p')?.style.setProperty('color', config.textColor || '#fff');"
+    },
+    {
+      "type": "clock",
+      "author": "SimpERROR_",
+      "name": "时钟",
+      "size": "1x1",
+      "desc": "实时显示当前时间",
       "category": "information",
-      "html": "<div><h3>测试小组件</h3><p>这是一个小组件</p></div>"
+      "version": "1.0.0",
+      "html": "<div class=\"clock-widget\"><div class=\"clock-time\">--:--:--</div><div class=\"clock-date\">----/--/--</div></div>",
+      "styles": ".clock-widget { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); } .clock-time { font-size: 28px; font-weight: bold; color: #fff; font-family: 'Courier New', monospace; } .clock-date { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 4px; }",
+      "config": [
+        {
+          "key": "format24h",
+          "label": "24小时制",
+          "type": "checkbox",
+          "default": true
+        },
+        {
+          "key": "showDate",
+          "label": "显示日期",
+          "type": "checkbox",
+          "default": true
+        }
+      ],
+      "scripts": "function updateClock() { const el = contentEl; const timeEl = el.querySelector('.clock-time'); const dateEl = el.querySelector('.clock-date'); if (!timeEl) return; const now = new Date(); const is24h = config.format24h !== false; timeEl.textContent = now.toLocaleTimeString('zh-CN', { hour12: !is24h }); if (dateEl && config.showDate !== false) { dateEl.textContent = now.toLocaleDateString('zh-CN'); } } updateClock(); const interval = setInterval(updateClock, 1000); contentEl._clockInterval = interval;",
+      "cleanup": "if (contentEl._clockInterval) { clearInterval(contentEl._clockInterval); }"
+    },
+    {
+      "type": "weather",
+      "author": "SimpERROR_",
+      "name": "天气",
+      "size": "1x2",
+      "desc": "显示实时天气信息",
+      "category": "information",
+      "version": "1.0.0",
+      "html": "<div class=\"weather-widget\"><div class=\"weather-icon\">☀️</div><div class=\"weather-info\"><div class=\"weather-temp\">--°C</div><div class=\"weather-desc\">加载中...</div></div></div>",
+      "styles": ".weather-widget { display: flex; align-items: center; gap: 16px; padding: 16px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); height: 100%; box-sizing: border-box; } .weather-icon { font-size: 48px; } .weather-info { flex: 1; } .weather-temp { font-size: 32px; font-weight: bold; color: #fff; } .weather-desc { font-size: 14px; color: rgba(255,255,255,0.9); margin-top: 4px; }",
+      "config": [
+        {
+          "key": "location",
+          "label": "城市",
+          "type": "text",
+          "default": "北京"
+        },
+        {
+          "key": "unit",
+          "label": "温度单位",
+          "type": "select",
+          "options": ["celsius", "fahrenheit"],
+          "default": "celsius"
+        }
+      ],
+      "permissions": ["network"]
+    },
+    {
+      "type": "quick_actions",
+      "author": "SimpERROR_",
+      "name": "快捷操作",
+      "size": "2x1",
+      "desc": "常用操作的快捷入口",
+      "category": "tools",
+      "version": "1.0.0",
+      "html": "<div class=\"quick-actions-widget\"><button class=\"qa-btn\" data-action=\"play\">▶ 游戏</button><button class=\"qa-btn\" data-action=\"skins\">👤 皮肤</button><button class=\"qa-btn\" data-action=\"settings\">⚙ 设置</button></div>",
+      "styles": ".quick-actions-widget { display: flex; gap: 12px; padding: 16px; height: 100%; box-sizing: border-box; justify-content: center; align-items: center; background: rgba(0,0,0,0.2); } .qa-btn { flex: 1; padding: 12px 8px; border: none; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; font-size: 14px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; } .qa-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }",
+      "config": [
+        {
+          "key": "showPlay",
+          "label": "显示游戏按钮",
+          "type": "checkbox",
+          "default": true
+        },
+        {
+          "key": "showSkins",
+          "label": "显示皮肤按钮",
+          "type": "checkbox",
+          "default": true
+        },
+        {
+          "key": "showSettings",
+          "label": "显示设置按钮",
+          "type": "checkbox",
+          "default": true
+        }
+      ],
+      "scripts": "contentEl.querySelectorAll('.qa-btn').forEach(btn => { btn.addEventListener('click', () => { const action = btn.dataset.action; console.log('Quick action:', action); if (action === 'play') window.simpmcAPI.launchGame(); else if (action === 'skins') window.simpmcAPI.switchPage('skins'); else if (action === 'settings') window.simpmcAPI.switchPage('settings'); }); });"
     }
   ]
 }

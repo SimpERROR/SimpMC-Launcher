@@ -543,7 +543,7 @@ async function switchPage(pageName) {
         if (pageName === 'home') {
             updateGreeting();
             if (window.loadHomePage) {
-                loadHomePage();
+                await window.loadHomePage();
             }
             loadProfilesForHomePage();
         } else if (pageName === 'profiles') {
