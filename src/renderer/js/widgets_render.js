@@ -1,19 +1,25 @@
-let installedVersions = [];
 let widgets = [];
-let widgetPositions = {};
 let draggedWidget = null;
-let dragOffsetX = 0;
-let dragOffsetY = 0;
+let gridConfig = {
+    columns: 4,
+    cellWidth: 0,
+    cellHeight: 120,
+    gap: 16,
+    containerHeight: 400
+};
 
 window.loadHomePage = loadHomePage;
 window.loadWidgetTemplates = loadWidgetTemplates;
 window.loadWidgets = loadWidgets;
 window.renderWidgets = renderWidgets;
 
+function getWTTemplates() {
+    return window.WIDGET_TEMPLATES || {};
+}
+
 function injectWidgetStyles(template) {
     if (!template || !template.styles) return;
     if (document.getElementById('widget-styles-' + template.type)) return;
-
     const styleEl = document.createElement('style');
     styleEl.id = 'widget-styles-' + template.type;
     styleEl.textContent = template.styles;
@@ -32,7 +38,6 @@ async function loadWidgets() {
         const data = await window.simpmcAPI.getWidgets();
         console.log('获取到小组件数据:', data);
         widgets = data.widgets || [];
-        widgetPositions = data.positions || {};
         window.widgets = widgets;
         console.log('处理后的小组件:', widgets);
     } catch (error) {
@@ -40,6 +45,94 @@ async function loadWidgets() {
         widgets = [];
         window.widgets = widgets;
     }
+}
+
+function getWidgetSize(widget) {
+    const size = widget.size || '1x1';
+    const [w, h] = size.split('x').map(Number);
+    return { width: w, height: h };
+}
+
+function calculateLayout() {
+    const gridEl = document.getElementById('widgets-grid');
+    if (!gridEl) return [];
+
+    const containerWidth = gridEl.offsetWidth;
+    gridConfig.cellWidth = (containerWidth - (gridConfig.columns - 1) * gridConfig.gap) / gridConfig.columns;
+
+    const placements = [];
+    const occupiedGrid = Array.from({ length: 100 }, () => Array(gridConfig.columns).fill(false));
+
+    widgets.forEach((widget, index) => {
+        if (!widget.enabled) return;
+
+        const WIDGET_TEMPLATES = getWTTemplates();
+        const template = WIDGET_TEMPLATES[widget.type] || externalWidgets[widget.type];
+        if (!template) return;
+
+        const { width, height } = getWidgetSize(widget);
+        const pos = widget.position;
+
+        if (pos && canPlace(occupiedGrid, pos.row, pos.col, width, height)) {
+            placeWidget(occupiedGrid, placements, widget, pos.row, pos.col, width, height);
+        } else {
+            let placed = false;
+            for (let row = 0; row < 100 && !placed; row++) {
+                for (let col = 0; col <= gridConfig.columns - width && !placed; col++) {
+                    if (canPlace(occupiedGrid, row, col, width, height)) {
+                        placeWidget(occupiedGrid, placements, widget, row, col, width, height);
+                        placed = true;
+                    }
+                }
+            }
+
+            if (!placed) {
+                const row = findNextFreeRow(occupiedGrid);
+                placeWidget(occupiedGrid, placements, widget, row, 0, width, height);
+            }
+        }
+    });
+
+    const maxRow = placements.length > 0 ? Math.max(...placements.map(p => p.row + p.height)) : 0;
+    gridConfig.containerHeight = Math.max(400, maxRow * (gridConfig.cellHeight + gridConfig.gap) + gridConfig.gap);
+
+    return placements;
+}
+
+function canPlace(grid, row, col, width, height) {
+    for (let r = row; r < row + height && r < grid.length; r++) {
+        for (let c = col; c < col + width && c < grid[0].length; c++) {
+            if (grid[r][c]) return false;
+        }
+    }
+    return true;
+}
+
+function placeWidget(grid, placements, widget, row, col, width, height) {
+    for (let r = row; r < row + height; r++) {
+        for (let c = col; c < col + width; c++) {
+            if (grid[r]) grid[r][c] = true;
+        }
+    }
+
+    placements.push({
+        widget,
+        row,
+        col,
+        width,
+        height,
+        x: col * (gridConfig.cellWidth + gridConfig.gap),
+        y: row * (gridConfig.cellHeight + gridConfig.gap),
+        w: width * gridConfig.cellWidth + (width - 1) * gridConfig.gap,
+        h: height * gridConfig.cellHeight + (height - 1) * gridConfig.gap
+    });
+}
+
+function findNextFreeRow(grid) {
+    for (let row = 0; row < grid.length; row++) {
+        if (grid[row].some(cell => cell)) return row;
+    }
+    return grid.length;
 }
 
 function renderWidgets() {
@@ -50,35 +143,31 @@ function renderWidgets() {
     }
 
     console.log('=== renderWidgets 被调用 ===');
-    console.log('window.widgets:', window.widgets);
-    console.log('window.WIDGET_TEMPLATES:', window.WIDGET_TEMPLATES);
-    console.log('window.externalWidgets:', window.externalWidgets);
 
     widgets = window.widgets || [];
-    WIDGET_TEMPLATES = window.WIDGET_TEMPLATES || {};
-    externalWidgets = window.externalWidgets || {};
 
     console.log('渲染前 - widgets:', widgets);
-    console.log('渲染前 - WIDGET_TEMPLATES:', WIDGET_TEMPLATES);
 
     if (widgets.length === 0) {
         grid.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.5); padding: 20px;">还没有添加小组件</div>';
+        grid.style.height = '200px';
         console.log('没有小组件可渲染');
         return;
     }
 
-    grid.innerHTML = widgets.map(widget => {
-        console.log('渲染小组件:', widget);
+    const placements = calculateLayout();
+    grid.style.height = gridConfig.containerHeight + 'px';
+
+    const WIDGET_TEMPLATES = getWTTemplates();
+
+    grid.innerHTML = placements.map(placement => {
+        const { widget, x, y, w, h } = placement;
         const template = WIDGET_TEMPLATES[widget.type] || externalWidgets[widget.type];
-        if (!template) {
-            console.warn('找不到小组件模板:', widget.type);
-            return '';
-        }
+        if (!template) return '';
 
         injectWidgetStyles(template);
 
         let content = template.html || '';
-
         if (template.render) {
             try {
                 const renderFn = new Function('config', 'widget', template.render);
@@ -89,13 +178,12 @@ function renderWidgets() {
             }
         }
 
-        const sizeClass = `size-${widget.size || '1x1'}`;
-
         return `
-            <div class="widget-card ${sizeClass} ${widget.enabled ? '' : 'disabled'}"
+            <div class="widget-card ${widget.enabled ? '' : 'disabled'}"
                  data-widget-id="${widget.id}"
                  data-widget-type="${widget.type}"
-                 draggable="true">
+                 draggable="true"
+                 style="left: ${x}px; top: ${y}px; width: ${w}px; height: ${h}px;">
                 <div class="widget-content">
                     ${content}
                 </div>
@@ -131,17 +219,23 @@ function renderWidgets() {
 }
 
 function initWidgetScripts() {
+    const WIDGET_TEMPLATES = getWTTemplates();
     widgets.forEach(widget => {
         if (!widget.enabled) return;
         const template = WIDGET_TEMPLATES[widget.type] || externalWidgets[widget.type];
+        console.log('检查小组件:', widget.type, '模板:', template ? '找到' : '未找到', '脚本:', template?.scripts ? '有' : '无');
         if (!template || !template.scripts) return;
 
         const contentEl = document.querySelector(`[data-widget-id="${widget.id}"] .widget-content`);
-        if (!contentEl) return;
+        if (!contentEl) {
+            console.log('未找到 contentEl for widget:', widget.id);
+            return;
+        }
 
         contentEl._widgetIntervals = contentEl._widgetIntervals || [];
 
         try {
+            console.log('执行脚本 for widget:', widget.type);
             const scriptFn = new Function('config', 'widget', 'contentEl', template.scripts);
             scriptFn(widget.config || {}, widget, contentEl);
         } catch (e) {
@@ -153,7 +247,6 @@ function initWidgetScripts() {
 function cleanupWidgetScripts(widgetId) {
     const contentEl = document.querySelector(`[data-widget-id="${widgetId}"] .widget-content`);
     if (!contentEl) return;
-
     if (contentEl._widgetIntervals) {
         contentEl._widgetIntervals.forEach(interval => clearInterval(interval));
         contentEl._widgetIntervals = [];
@@ -161,14 +254,15 @@ function cleanupWidgetScripts(widgetId) {
 }
 
 function initWidgetDrag() {
-    const cards = document.querySelectorAll('.widget-card');
+    const grid = document.getElementById('widgets-grid');
+    if (!grid) return;
 
-    cards.forEach(card => {
+    grid.addEventListener('dragover', handleGridDragOver);
+    grid.addEventListener('drop', handleGridDrop);
+
+    document.querySelectorAll('.widget-card').forEach(card => {
         card.addEventListener('dragstart', handleDragStart);
         card.addEventListener('dragend', handleDragEnd);
-        card.addEventListener('dragover', handleDragOver);
-        card.addEventListener('drop', handleDrop);
-        card.addEventListener('dragleave', handleDragLeave);
     });
 }
 
@@ -181,76 +275,150 @@ function handleDragStart(e) {
 
 function handleDragEnd(e) {
     this.classList.remove('dragging');
+    draggedWidget = null;
     document.querySelectorAll('.widget-card').forEach(card => {
         card.classList.remove('drag-over');
     });
-    draggedWidget = null;
 }
 
-function handleDragOver(e) {
+function handleGridDragOver(e) {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    if (this !== draggedWidget) {
-        this.classList.add('drag-over');
-    }
 }
 
-function handleDragLeave(e) {
-    this.classList.remove('drag-over');
-}
-
-function handleDrop(e) {
+function handleGridDrop(e) {
     e.preventDefault();
-    this.classList.remove('drag-over');
+    if (!draggedWidget) return;
 
-    if (this === draggedWidget) return;
+    const grid = document.getElementById('widgets-grid');
+    const rect = grid.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
-    const draggedId = draggedWidget.dataset.widgetId;
-    const targetId = this.dataset.widgetId;
+    const col = Math.round(x / (gridConfig.cellWidth + gridConfig.gap));
+    const row = Math.round(y / (gridConfig.cellHeight + gridConfig.gap));
 
-    const draggedIndex = widgets.findIndex(w => w.id === draggedId);
-    const targetIndex = widgets.findIndex(w => w.id === targetId);
+    const widgetId = draggedWidget.dataset.widgetId;
+    const widget = widgets.find(w => w.id === widgetId);
+    if (!widget) return;
 
-    if (draggedIndex !== -1 && targetIndex !== -1) {
-        [widgets[draggedIndex], widgets[targetIndex]] = [widgets[targetIndex], widgets[draggedIndex]];
-        saveWidgetPositions();
-        renderWidgets();
+    const { width, height } = getWidgetSize(widget);
+    const clampedCol = Math.max(0, Math.min(col, gridConfig.columns - width));
+    const clampedRow = Math.max(0, row);
+
+    reorderWidget(widgetId, clampedCol, clampedRow);
+}
+
+function reorderWidget(widgetId, newCol, newRow) {
+    const widgetIndex = widgets.findIndex(w => w.id === widgetId);
+    if (widgetIndex === -1) return;
+
+    const widget = widgets[widgetIndex];
+    const { width, height } = getWidgetSize(widget);
+
+    widgets.splice(widgetIndex, 1);
+
+    const occupiedGrid = buildOccupiedGrid();
+    const placed = tryPlaceAt(occupiedGrid, widget, newCol, newRow, width, height);
+
+    if (!placed) {
+        widgets.push(widget);
     }
+
+    window.simpmcAPI.saveWidgets(widgets).then(() => {
+        window.widgets = widgets;
+        renderWidgets();
+    }).catch(err => {
+        console.error('保存失败:', err);
+    });
+}
+
+function buildOccupiedGrid() {
+    const grid = Array.from({ length: 100 }, () => Array(gridConfig.columns).fill(false));
+    const WIDGET_TEMPLATES = getWTTemplates();
+
+    widgets.forEach(widget => {
+        if (!widget.enabled) return;
+        const template = WIDGET_TEMPLATES[widget.type] || externalWidgets[widget.type];
+        if (!template) return;
+
+        const pos = widget.position || { col: 0, row: 0 };
+        const { width, height } = getWidgetSize(widget);
+
+        for (let r = pos.row; r < pos.row + height && r < grid.length; r++) {
+            for (let c = pos.col; c < pos.col + width && c < grid[0].length; c++) {
+                if (grid[r]) grid[r][c] = true;
+            }
+        }
+    });
+
+    return grid;
+}
+
+function tryPlaceAt(grid, widget, col, row, width, height) {
+    col = Math.max(0, Math.min(col, gridConfig.columns - width));
+    row = Math.max(0, row);
+
+    if (canPlace(grid, row, col, width, height)) {
+        for (let r = row; r < row + height; r++) {
+            for (let c = col; c < col + width; c++) {
+                if (grid[r]) grid[r][c] = true;
+            }
+        }
+        widget.position = { col, row };
+        widgets.push(widget);
+        return true;
+    }
+
+    const alternatives = [];
+    for (let r = 0; r < row + 10 && r < 100; r++) {
+        for (let c = 0; c < gridConfig.columns; c++) {
+            if (canPlace(grid, r, c, width, height)) {
+                alternatives.push({ col: c, row: r, dist: Math.abs(r - row) + Math.abs(c - col) });
+            }
+        }
+    }
+
+    alternatives.sort((a, b) => a.dist - b.dist);
+
+    if (alternatives.length > 0) {
+        const best = alternatives[0];
+        for (let r = best.row; r < best.row + height; r++) {
+            for (let c = best.col; c < best.col + width; c++) {
+                if (grid[r]) grid[r][c] = true;
+            }
+        }
+        widget.position = { col: best.col, row: best.row };
+        widgets.push(widget);
+        return true;
+    }
+
+    return false;
 }
 
 async function toggleWidget(widgetId) {
     const widget = widgets.find(w => w.id === widgetId);
     if (widget) {
         widget.enabled = !widget.enabled;
-        await window.simpmcAPI.saveWidgets(widgets);
-        renderWidgets();
+        try {
+            await window.simpmcAPI.saveWidgets(widgets);
+            window.widgets = widgets;
+            renderWidgets();
+        } catch (error) {
+            console.error('切换状态失败:', error);
+        }
     }
 }
 
 async function removeWidget(widgetId) {
     if (confirm('确定要删除这个小组件吗？')) {
-        widgets = widgets.filter(w => w.id !== widgetId);
-        await window.simpmcAPI.saveWidgets(widgets);
-        renderWidgets();
+        try {
+            await window.simpmcAPI.removeWidget(widgetId);
+            widgets = widgets.filter(w => w.id !== widgetId);
+            window.widgets = widgets;
+            renderWidgets();
+        } catch (error) {
+            console.error('删除失败:', error);
+        }
     }
-}
-
-async function saveWidgetPositions() {
-    const positions = {};
-    widgets.forEach((widget, index) => {
-        positions[widget.id] = index;
-    });
-    await window.simpmcAPI.saveWidgetPositions(positions);
-    await window.simpmcAPI.saveWidgets(widgets);
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-function playVersion(versionId) {
-    console.log('Playing version:', versionId);
-    alert('游戏启动功能开发中...');
 }

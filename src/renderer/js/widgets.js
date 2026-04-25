@@ -29,6 +29,58 @@ async function loadWidgetTemplates() {
     }
 }
 
+function checkForUpdates() {
+    const updates = [];
+    Object.values(WIDGET_TEMPLATES).forEach(template => {
+        const installed = installedWidgets.find(w => w.type === template.type);
+        if (installed && installed.version && template.version) {
+            if (compareVersions(template.version, installed.version) > 0) {
+                updates.push({
+                    type: template.type,
+                    name: template.name,
+                    oldVersion: installed.version,
+                    newVersion: template.version
+                });
+            }
+        }
+    });
+    if (updates.length > 0) {
+        showUpdateNotification(updates);
+    }
+}
+
+function compareVersions(a, b) {
+    const partsA = a.split('.').map(Number);
+    const partsB = b.split('.').map(Number);
+    for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
+        const numA = partsA[i] || 0;
+        const numB = partsB[i] || 0;
+        if (numA > numB) return 1;
+        if (numA < numB) return -1;
+    }
+    return 0;
+}
+
+function showUpdateNotification(updates) {
+    const names = updates.map(u => `"${u.name}" (${u.oldVersion} → ${u.newVersion})`).join('\n');
+    showConfirmModal(
+        '发现更新',
+        `以下小组件有新版本可用：\n\n${names}\n\n是否立即更新？`,
+        () => {
+            updates.forEach(update => {
+                const widget = installedWidgets.find(w => w.type === update.type);
+                if (widget) {
+                    widget.version = update.newVersion;
+                }
+            });
+            window.simpmcAPI.saveWidgets(installedWidgets).then(() => {
+                showToast('小组件已更新', 'success');
+                renderInstalledWidgets();
+            });
+        }
+    );
+}
+
 async function loadExternalWidget(url) {
     try {
         const response = await fetch(url);
@@ -255,6 +307,7 @@ async function loadWidgetsPage() {
         window.widgets = installedWidgets;
         renderInstalledWidgets();
         renderStoreWidgets();
+        checkForUpdates();
     } catch (error) {
         console.error('加载小组件失败:', error);
         showToast('加载小组件失败', 'error');
@@ -410,7 +463,6 @@ function renderStoreWidgets() {
     if (externalEntries.length > 0) {
         const externalNotInstalled = externalEntries.filter(([type]) => !installedTypes.includes(type));
         if (externalNotInstalled.length > 0) {
-            html += `<div class="store-section-title external">外部小组件</div>`;
             html += externalNotInstalled.map(([type, template]) => {
                 injectWidgetStyles(template);
                 return `
@@ -677,6 +729,10 @@ function renderWidgetContent(widgetId) {
 document.addEventListener('click', (e) => {
     if (e.target.id === 'confirm-btn' && confirmCallback) {
         confirmCallback();
+    }
+
+    if (e.target.classList.contains('confirm-btn') && e.target.classList.contains('cancel')) {
+        closeConfirmModal();
     }
 
     if (e.target.id === 'security-warning-confirm-btn' && externalImportCallback) {
