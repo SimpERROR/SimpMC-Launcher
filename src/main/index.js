@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const os = require('os');
 const Store = require('electron-store');
@@ -1657,4 +1657,66 @@ ipcMain.handle('update_widget', (event, widgetId, updates) => {
         return true;
     }
     return false;
+});
+
+ipcMain.handle('open_external', (event, url) => {
+    if (!url) return false;
+    try {
+        shell.openExternal(url);
+        return true;
+    } catch (error) {
+        console.error('Failed to open external URL:', error);
+        return false;
+    }
+});
+
+ipcMain.handle('get_github_contributors', async (event) => {
+    try {
+        const options = {
+            hostname: 'api.github.com',
+            port: 443,
+            path: '/repos/SimpERROR/SimpMC-Launcher/contributors?per_page=30',
+            method: 'GET',
+            headers: {
+                'User-Agent': 'SimpMC-Launcher'
+            }
+        };
+
+        return new Promise((resolve, reject) => {
+            const req = https.request(options, (res) => {
+                let data = '';
+
+                res.on('data', (chunk) => {
+                    data += chunk;
+                });
+
+                res.on('end', () => {
+                    if (res.statusCode === 200) {
+                        try {
+                            const contributors = JSON.parse(data).map(c => ({
+                                login: c.login,
+                                avatar_url: c.avatar_url,
+                                html_url: c.html_url,
+                                contributions: c.contributions
+                            }));
+                            resolve(contributors);
+                        } catch (e) {
+                            reject(e);
+                        }
+                    } else {
+                        reject(new Error(`HTTP ${res.statusCode}`));
+                    }
+                });
+            });
+
+            req.on('error', (error) => {
+                reject(error);
+            });
+
+            req.end();
+        });
+    } catch (error) {
+        console.error('Failed to get contributors:', error);
+        return null;
+    }
 });

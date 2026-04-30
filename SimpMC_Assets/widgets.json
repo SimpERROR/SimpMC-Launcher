@@ -56,6 +56,125 @@
       "cleanup": "if (contentEl._clockInterval) { clearInterval(contentEl._clockInterval); }"
     },
     {
+      "type": "system_info",
+      "author": "SimpERROR_",
+      "name": "系统信息",
+      "size": "2x1",
+      "desc": "显示系统资源使用情况",
+      "category": "system",
+      "version": "1.0.0",
+      "html": "<div class=\"system-widget\"><div class=\"system-item\"><div class=\"system-label\">CPU</div><div class=\"system-bar\"><div class=\"system-fill cpu-fill\" style=\"width: 0%\"></div></div><div class=\"system-value cpu-value\">0%</div></div><div class=\"system-item\"><div class=\"system-label\">内存</div><div class=\"system-bar\"><div class=\"system-fill mem-fill\" style=\"width: 0%\"></div></div><div class=\"system-value mem-value\">0%</div></div></div>",
+      "styles": ".system-widget { padding: 16px; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); height: 100%; } .system-item { display: flex; align-items: center; margin-bottom: 12px; } .system-item:last-child { margin-bottom: 0; } .system-label { width: 50px; font-size: 12px; color: #ecf0f1; font-weight: bold; } .system-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; margin: 0 12px; overflow: hidden; } .system-fill { height: 100%; border-radius: 4px; transition: width 0.3s ease; } .cpu-fill { background: linear-gradient(90deg, #e74c3c, #f39c12); } .mem-fill { background: linear-gradient(90deg, #3498db, #2980b9); } .system-value { width: 40px; font-size: 11px; color: #ecf0f1; text-align: right; font-weight: bold; }",
+      "scripts": "async function updateSystemInfo() { try { const info = await window.simpmcAPI.getSystemInfo(); const el = contentEl; if (info) { const cpuEl = el.querySelector('.cpu-fill'); const cpuValEl = el.querySelector('.cpu-value'); const memEl = el.querySelector('.mem-fill'); const memValEl = el.querySelector('.mem-value'); if (cpuEl && cpuValEl) { cpuEl.style.width = info.cpu + '%'; cpuValEl.textContent = info.cpu + '%'; } if (memEl && memValEl) { memEl.style.width = info.memory + '%'; memValEl.textContent = info.memory + '%'; } } } catch (err) { console.error('System info update error:', err); } } updateSystemInfo(); const interval = setInterval(updateSystemInfo, 2000); contentEl._systemInterval = interval;",
+      "cleanup": "if (contentEl._systemInterval) { clearInterval(contentEl._systemInterval); }"
+    },
+    {
+      "type": "music_player",
+      "author": "SimpERROR_",
+      "name": "音乐播放器",
+      "size": "2x1",
+      "desc": "简易音乐播放控制",
+      "category": "media",
+      "version": "1.0.0",
+      "html": "<div class=\"music-widget\"><div class=\"music-info\"><div class=\"music-title\">未播放</div><div class=\"music-artist\">--</div></div><div class=\"music-controls\"><button class=\"music-btn prev-btn\">⏮️</button><button class=\"music-btn play-btn\">▶️</button><button class=\"music-btn next-btn\">⏭️</button></div></div>",
+      "styles": ".music-widget { padding: 16px; background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%); height: 100%; display: flex; justify-content: space-between; align-items: center; } .music-info { flex: 1; } .music-title { font-size: 14px; font-weight: bold; color: #fff; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .music-artist { font-size: 12px; color: rgba(255,255,255,0.8); } .music-controls { display: flex; gap: 8px; } .music-btn { background: rgba(255,255,255,0.2); border: none; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; font-size: 14px; } .music-btn:hover { background: rgba(255,255,255,0.3); }",
+      "scripts": "function updateMusicInfo() { try { const settings = window.simpmcAPI.getMusicSettings(); const el = contentEl; const titleEl = el.querySelector('.music-title'); const artistEl = el.querySelector('.music-artist'); const playBtn = el.querySelector('.play-btn'); if (titleEl && window.currentPlayingSong) { titleEl.textContent = window.currentPlayingSong; } if (artistEl) { artistEl.textContent = '本地音乐'; } if (playBtn) { playBtn.textContent = '⏸️'; } } catch (err) { console.error('Music info update error:', err); } } function setupMusicControls() { const el = contentEl; const playBtn = el.querySelector('.play-btn'); const prevBtn = el.querySelector('.prev-btn'); const nextBtn = el.querySelector('.next-btn'); if (playBtn) { playBtn.addEventListener('click', () => { window.simpmcAPI.toggleMusic(); playBtn.textContent = playBtn.textContent === '▶️' ? '⏸️' : '▶️'; }); } if (prevBtn) { prevBtn.addEventListener('click', () => { window.simpmcAPI.skipToNextMusic(); }); } if (nextBtn) { nextBtn.addEventListener('click', () => { window.simpmcAPI.skipToNextMusic(); }); } } updateMusicInfo(); setupMusicControls();"
+    },
+    {
+      "type": "quick_launch",
+      "author": "SimpERROR_",
+      "name": "快速启动",
+      "size": "1x2",
+      "desc": "常用功能的快速访问",
+      "category": "utility",
+      "version": "1.0.0",
+      "html": "<div class=\"quick-widget\"><div class=\"quick-grid\"><button class=\"quick-btn\" data-action=\"profiles\">👤<br>角色</button><button class=\"quick-btn\" data-action=\"wardrobe\">👕<br>衣柜</button><button class=\"quick-btn\" data-action=\"download\">⬇️<br>下载</button><button class=\"quick-btn\" data-action=\"settings\">⚙️<br>设置</button></div></div>",
+      "styles": ".quick-widget { padding: 16px; background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); height: 100%; } .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; height: 100%; } .quick-btn { background: rgba(255,255,255,0.2); border: none; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s, transform 0.1s; font-size: 20px; padding: 8px; } .quick-btn:hover { background: rgba(255,255,255,0.3); transform: scale(1.05); } .quick-btn:active { transform: scale(0.95); } .quick-btn br { display: none; } .quick-btn::after { content: attr(data-action); font-size: 10px; margin-top: 4px; color: rgba(255,255,255,0.9); }",
+      "scripts": "function setupQuickLaunch() { const el = contentEl; const buttons = el.querySelectorAll('.quick-btn'); buttons.forEach(btn => { btn.addEventListener('click', () => { const action = btn.dataset.action; if (action === 'profiles') { window.simpmcAPI.openProfileWindow(); } else if (action === 'wardrobe') { switchPage('wardrobe'); } else if (action === 'download') { switchPage('download'); } else if (action === 'settings') { switchPage('settings'); } }); }); } setupQuickLaunch();"
+    },
+    {
+      "type": "calendar",
+      "author": "SimpERROR_",
+      "name": "日历",
+      "size": "2x2",
+      "desc": "显示当前月份的日历",
+      "category": "information",
+      "version": "1.0.0",
+      "html": "<div class=\"calendar-widget\"><div class=\"calendar-header\"><div class=\"calendar-month\">--</div><div class=\"calendar-year\">----</div></div><div class=\"calendar-grid\"><div class=\"calendar-weekdays\"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div><div class=\"calendar-days\"></div></div></div>",
+      "styles": ".calendar-widget { padding: 16px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); height: 100%; } .calendar-header { text-align: center; margin-bottom: 12px; } .calendar-month { font-size: 18px; font-weight: bold; color: #fff; } .calendar-year { font-size: 12px; color: rgba(255,255,255,0.8); } .calendar-grid { } .calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 4px; } .calendar-weekdays div { font-size: 10px; color: rgba(255,255,255,0.7); text-align: center; padding: 4px 0; } .calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; } .calendar-day { font-size: 12px; color: #fff; text-align: center; padding: 6px 0; border-radius: 4px; cursor: pointer; transition: background 0.2s; } .calendar-day:hover { background: rgba(255,255,255,0.2); } .calendar-day.today { background: rgba(255,255,255,0.3); font-weight: bold; } .calendar-day.other-month { color: rgba(255,255,255,0.4); }",
+      "scripts": "function renderCalendar() { const el = contentEl; const monthEl = el.querySelector('.calendar-month'); const yearEl = el.querySelector('.calendar-year'); const daysEl = el.querySelector('.calendar-days'); const now = new Date(); const year = now.getFullYear(); const month = now.getMonth(); const firstDay = new Date(year, month, 1); const lastDay = new Date(year, month + 1, 0); const startDate = new Date(firstDay); startDate.setDate(startDate.getDate() - firstDay.getDay()); const endDate = new Date(lastDay); endDate.setDate(endDate.getDate() + (6 - lastDay.getDay())); const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']; monthEl.textContent = monthNames[month]; yearEl.textContent = year; let html = ''; for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) { const isToday = d.toDateString() === now.toDateString(); const isCurrentMonth = d.getMonth() === month; const className = `calendar-day ${isToday ? 'today' : ''} ${isCurrentMonth ? '' : 'other-month'}`; html += `<div class=\"${className}\">${d.getDate()}</div>`; } daysEl.innerHTML = html; } renderCalendar();"
+    },
+    {
+      "type": "notes",
+      "author": "SimpERROR_",
+      "name": "便签",
+      "size": "2x1",
+      "desc": "快速笔记和提醒",
+      "category": "utility",
+      "version": "1.0.0",
+      "html": "<div class=\"notes-widget\"><div class=\"notes-header\"><span class=\"notes-title\">📝 便签</span><button class=\"notes-add-btn\">+</button></div><div class=\"notes-list\"></div></div>",
+      "styles": ".notes-widget { padding: 16px; background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); height: 100%; display: flex; flex-direction: column; } .notes-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; } .notes-title { font-size: 14px; font-weight: bold; color: #2c3e50; } .notes-add-btn { background: #3498db; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; line-height: 1; } .notes-list { flex: 1; overflow-y: auto; } .note-item { background: rgba(255,255,255,0.9); padding: 8px; border-radius: 6px; margin-bottom: 8px; font-size: 12px; color: #2c3e50; position: relative; } .note-item:last-child { margin-bottom: 0; } .note-delete { position: absolute; top: 4px; right: 4px; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; cursor: pointer; display: none; } .note-item:hover .note-delete { display: block; }",
+      "config": [
+        {
+          "key": "maxNotes",
+          "label": "最大便签数",
+          "type": "number",
+          "default": 5,
+          "min": 1,
+          "max": 10
+        }
+      ],
+      "scripts": "function loadNotes() { const notes = JSON.parse(localStorage.getItem('widget_notes') || '[]'); const el = contentEl; const listEl = el.querySelector('.notes-list'); listEl.innerHTML = notes.map((note, index) => `<div class=\"note-item\">${note}<button class=\"note-delete\" data-index=\"${index}\">×</button></div>`).join(''); } function saveNotes(notes) { localStorage.setItem('widget_notes', JSON.stringify(notes)); } function setupNotes() { const el = contentEl; const addBtn = el.querySelector('.notes-add-btn'); const listEl = el.querySelector('.notes-list'); addBtn.addEventListener('click', () => { const note = prompt('输入便签内容:'); if (note && note.trim()) { const notes = JSON.parse(localStorage.getItem('widget_notes') || '[]'); notes.unshift(note.trim()); if (notes.length > (config.maxNotes || 5)) { notes.pop(); } saveNotes(notes); loadNotes(); } }); listEl.addEventListener('click', (e) => { if (e.target.classList.contains('note-delete')) { const index = parseInt(e.target.dataset.index); const notes = JSON.parse(localStorage.getItem('widget_notes') || '[]'); notes.splice(index, 1); saveNotes(notes); loadNotes(); } }); loadNotes(); } setupNotes();"
+    },
+    {
+      "type": "github_stats",
+      "author": "SimpERROR_",
+      "name": "GitHub 统计",
+      "size": "2x1",
+      "desc": "显示 GitHub 仓库统计信息",
+      "category": "development",
+      "version": "1.0.0",
+      "html": "<div class=\"github-widget\"><div class=\"github-header\"><span class=\"github-icon\">🐙</span><span class=\"github-repo\">SimpMC-Launcher</span></div><div class=\"github-stats\"><div class=\"github-stat\"><div class=\"github-value stars-value\">--</div><div class=\"github-label\">Stars</div></div><div class=\"github-stat\"><div class=\"github-value forks-value\">--</div><div class=\"github-label\">Forks</div></div><div class=\"github-stat\"><div class=\"github-value issues-value\">--</div><div class=\"github-label\">Issues</div></div></div></div>",
+      "styles": ".github-widget { padding: 16px; background: linear-gradient(135deg, #24292e 0%, #1a1e22 100%); height: 100%; } .github-header { display: flex; align-items: center; margin-bottom: 12px; } .github-icon { font-size: 20px; margin-right: 8px; } .github-repo { font-size: 14px; font-weight: bold; color: #fff; } .github-stats { display: flex; justify-content: space-between; } .github-stat { text-align: center; flex: 1; } .github-value { font-size: 18px; font-weight: bold; color: #58a6ff; } .github-label { font-size: 10px; color: rgba(255,255,255,0.7); margin-top: 2px; }",
+      "config": [
+        {
+          "key": "repo",
+          "label": "仓库名",
+          "type": "text",
+          "default": "SimpERROR/SimpMC-Launcher"
+        }
+      ],
+      "permissions": ["network"],
+      "scripts": "async function fetchGitHubStats() { try { const repo = config.repo || 'SimpERROR/SimpMC-Launcher'; const response = await fetch(`https://api.github.com/repos/${repo}`); if (!response.ok) throw new Error('Network response was not ok'); const data = await response.json(); const el = contentEl; el.querySelector('.stars-value').textContent = data.stargazers_count || '--'; el.querySelector('.forks-value').textContent = data.forks_count || '--'; el.querySelector('.issues-value').textContent = data.open_issues_count || '--'; } catch (err) { console.error('GitHub stats fetch error:', err); const el = contentEl; el.querySelector('.stars-value').textContent = '--'; el.querySelector('.forks-value').textContent = '--'; el.querySelector('.issues-value').textContent = '--'; } } fetchGitHubStats(); const interval = setInterval(fetchGitHubStats, 300000); contentEl._githubInterval = interval;",
+      "cleanup": "if (contentEl._githubInterval) { clearInterval(contentEl._githubInterval); }"
+    },
+    {
+      "type": "cpu_monitor",
+      "author": "SimpERROR_",
+      "name": "CPU 监控",
+      "size": "1x1",
+      "desc": "实时 CPU 使用率图表",
+      "category": "system",
+      "version": "1.0.0",
+      "html": "<div class=\"cpu-monitor-widget\"><div class=\"cpu-title\">CPU</div><div class=\"cpu-chart\"><canvas class=\"cpu-canvas\" width=\"80\" height=\"40\"></canvas></div><div class=\"cpu-percentage\">0%</div></div>",
+      "styles": ".cpu-monitor-widget { padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; } .cpu-title { font-size: 12px; font-weight: bold; color: #fff; margin-bottom: 8px; } .cpu-chart { margin: 8px 0; } .cpu-canvas { width: 100%; height: 40px; } .cpu-percentage { font-size: 16px; font-weight: bold; color: #fff; }",
+      "scripts": "let cpuHistory = []; const maxHistory = 20; function updateCPUMonitor() { try { const info = window.simpmcAPI.getSystemInfo(); const el = contentEl; const canvas = el.querySelector('.cpu-canvas'); const percentageEl = el.querySelector('.cpu-percentage'); if (info && canvas && percentageEl) { const ctx = canvas.getContext('2d'); const cpuUsage = info.cpu || 0; cpuHistory.push(cpuUsage); if (cpuHistory.length > maxHistory) { cpuHistory.shift(); } percentageEl.textContent = cpuUsage + '%'; // 绘制图表 ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); const stepX = canvas.width / (cpuHistory.length - 1 || 1); cpuHistory.forEach((usage, index) => { const x = index * stepX; const y = canvas.height - (usage / 100) * canvas.height; if (index === 0) { ctx.moveTo(x, y); } else { ctx.lineTo(x, y); } }); ctx.stroke(); } } catch (err) { console.error('CPU monitor update error:', err); } } updateCPUMonitor(); const interval = setInterval(updateCPUMonitor, 1000); contentEl._cpuInterval = interval;",
+      "cleanup": "if (contentEl._cpuInterval) { clearInterval(contentEl._cpuInterval); }"
+    },
+    {
+      "type": "motivational_quote",
+      "author": "SimpERROR_",
+      "name": "励志语录",
+      "size": "2x1",
+      "desc": "每日随机励志语录",
+      "category": "lifestyle",
+      "version": "1.0.0",
+      "html": "<div class=\"quote-widget\"><div class=\"quote-text\">\"加载中...\"</div><div class=\"quote-author\">--</div></div>",
+      "styles": ".quote-widget { padding: 20px; background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); height: 100%; display: flex; flex-direction: column; justify-content: center; text-align: center; } .quote-text { font-size: 14px; font-style: italic; color: #fff; line-height: 1.4; margin-bottom: 12px; } .quote-author { font-size: 12px; color: rgba(255,255,255,0.8); font-weight: bold; }",
+      "scripts": "const quotes = [ { text: '成功不是终点，失败也不是终结，只有勇气才是永恒。', author: '温斯顿·丘吉尔' }, { text: '生活不是等待风暴过去，而是学会在雨中翩翩起舞。', author: '薇薇安·格林' }, { text: '你的时间有限，所以不要把它浪费在别人的生活上。', author: '史蒂夫·乔布斯' }, { text: '相信你自己，你比想象中更强大。', author: '未知' }, { text: '每一次失败，都是向成功迈进的一步。', author: '未知' }, { text: '今天是余下生命中最年轻的一天。', author: '未知' }, { text: '行动胜于言语，执行胜于计划。', author: '未知' }, { text: '保持好奇心，永远学习。', author: '阿尔伯特·爱因斯坦' }, { text: '机会总是青睐有准备的人。', author: '路易·巴斯德' }, { text: '坚持不懈，直到成功。', author: '未知' } ]; function showRandomQuote() { const randomIndex = Math.floor(Math.random() * quotes.length); const quote = quotes[randomIndex]; const el = contentEl; el.querySelector('.quote-text').textContent = quote.text; el.querySelector('.quote-author').textContent = '— ' + quote.author; } showRandomQuote(); const interval = setInterval(showRandomQuote, 3600000); contentEl._quoteInterval = interval;",
+      "cleanup": "if (contentEl._quoteInterval) { clearInterval(contentEl._quoteInterval); }"
+    },
+    {
       "type": "weather",
       "author": "SimpERROR_",
       "name": "天气",
@@ -82,38 +201,6 @@
       ],
       "permissions": ["network"],
       "scripts": "async function fetchWeather() { const loc = config.location || '北京'; const isCelsius = config.unit !== 'fahrenheit'; try { const response = await fetch(`https://wttr.in/${encodeURIComponent(loc)}?format=j1`); if (!response.ok) throw new Error('Network response was not ok'); const data = await response.json(); const current = data.current_condition[0]; const temp = isCelsius ? current.temp_C + '°C' : current.temp_F + '°F'; const desc = current.weatherDesc[0].value; const icon = getWeatherIcon(current.weatherCode); const el = contentEl; el.querySelector('.weather-temp').textContent = temp; el.querySelector('.weather-desc').textContent = desc; el.querySelector('.weather-icon').textContent = icon; } catch (err) { console.error('Weather fetch error:', err); const el = contentEl; el.querySelector('.weather-temp').textContent = '--°'; el.querySelector('.weather-desc').textContent = '获取失败'; } } function getWeatherIcon(code) { const c = parseInt(code); if (c === 113) return '☀️'; if (c >= 116 && c <= 119) return '⛅'; if (c >= 122 && c <= 143) return '☁️'; if (c >= 176 && c <= 263) return '🌧️'; if (c >= 266 && c <= 299) return '🌦️'; if (c >= 302 && c <= 359) return '🌧️'; if (c >= 362 && c <= 377) return '🌨️'; if (c >= 386 && c <= 395) return '⛈️'; return '🌤️'; } fetchWeather(); const interval = setInterval(fetchWeather, 1800000); contentEl._weatherInterval = interval;"
-    },
-    {
-      "type": "quick_actions",
-      "author": "SimpERROR_",
-      "name": "快捷操作",
-      "size": "2x1",
-      "desc": "常用操作的快捷入口",
-      "category": "tools",
-      "version": "1.0.0",
-      "html": "<div class=\"quick-actions-widget\"><button class=\"qa-btn\" data-action=\"play\">▶ 游戏</button><button class=\"qa-btn\" data-action=\"skins\">👤 皮肤</button><button class=\"qa-btn\" data-action=\"settings\">⚙ 设置</button></div>",
-      "styles": ".quick-actions-widget { display: flex; gap: 12px; padding: 16px; height: 100%; box-sizing: border-box; justify-content: center; align-items: center; background: rgba(0,0,0,0.2); } .qa-btn { flex: 1; padding: 12px 8px; border: none; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; font-size: 14px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; } .qa-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }",
-      "config": [
-        {
-          "key": "showPlay",
-          "label": "显示游戏按钮",
-          "type": "checkbox",
-          "default": true
-        },
-        {
-          "key": "showSkins",
-          "label": "显示皮肤按钮",
-          "type": "checkbox",
-          "default": true
-        },
-        {
-          "key": "showSettings",
-          "label": "显示设置按钮",
-          "type": "checkbox",
-          "default": true
-        }
-      ],
-      "scripts": "contentEl.querySelectorAll('.qa-btn').forEach(btn => { btn.addEventListener('click', () => { const action = btn.dataset.action; console.log('Quick action:', action); if (action === 'play') window.simpmcAPI.launchGame(); else if (action === 'skins') window.simpmcAPI.switchPage('skins'); else if (action === 'settings') window.simpmcAPI.switchPage('settings'); }); });"
     }
   ]
 }

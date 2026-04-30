@@ -5,6 +5,12 @@ let cachedProfiles = [];
 let currentPage = 'home';
 let skinview3dLoaded = false;
 
+function openExternal(url) {
+    if (window.simpmcAPI && window.simpmcAPI.openExternal) {
+        window.simpmcAPI.openExternal(url);
+    }
+}
+
 function loadSkinview3dLibrary() {
     return new Promise((resolve, reject) => {
         if (skinview3dLoaded && window.skinview3d) {
@@ -254,6 +260,9 @@ async function initApp() {
             onboardingNext();
         }
     });
+
+    initUpdateReminder();
+    await checkUpdateStatus();
     
     // 监听音乐结束事件，用于显示歌曲切换指示器并播放音乐
     window.simpmcAPI.onMusicEnded((event, data) => {
@@ -568,6 +577,8 @@ async function switchPage(pageName) {
             loadCarousel()        
         } else if (pageName === 'widgets') {
             loadWidgetsPage();
+        } else if (pageName === 'about') {
+            loadAboutPage();
         }
     } catch (error) {
         console.error('Error loading page:', error);
@@ -2182,5 +2193,46 @@ function updateLaunchButton() {
         if (text && text !== 'home.launch') {
             launchBtn.textContent = text;
         }
+    }
+}
+
+async function loadAboutPage() {
+    const contributorsList = document.getElementById('contributors-list');
+    if (!contributorsList) return;
+
+    try {
+        const contributors = await window.simpmcAPI.getGithubContributors();
+        
+        if (contributors && contributors.length > 0) {
+            // 先保留作者信息
+            const authorHtml = `
+                <div class="about-credit-item">
+                    <div class="about-credit-name">SimpERROR_</div>
+                    <div class="about-credit-role" data-i18n="about.author">作者</div>
+                </div>
+            `;
+            
+            // 渲染其他贡献者
+            let contributorsHtml = '';
+            contributors.forEach(contributor => {
+                if (contributor.login !== 'SimpERROR_') {
+                    contributorsHtml += `
+                        <div class="about-credit-item contributor" onclick="openExternal('${contributor.html_url}')">
+                            <img class="contributor-avatar" src="${contributor.avatar_url}" alt="${contributor.login}">
+                            <div class="contributor-info">
+                                <div class="about-credit-name">${contributor.login}</div>
+                                <div class="contributor-contributions">${contributor.contributions} contributions</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            contributorsList.innerHTML = authorHtml + contributorsHtml;
+            applyTranslations();
+        }
+    } catch (error) {
+        console.error('Failed to load contributors:', error);
+        // 如果加载失败，保持默认内容
     }
 }

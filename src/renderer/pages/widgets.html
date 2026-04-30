@@ -818,7 +818,7 @@
 </style>
 
 <div class="page-header">
-    <button class="back-btn" onclick="switchPage('home')">
+    <button class="back-btn" onclick="switchPage('discovery')">
         <img src="../assets/icon/arrow-left-solid-full.svg" alt="Back">
     </button>
     <h1 data-i18n="widgets.store_title">小组件管理</h1>
@@ -850,7 +850,7 @@
                     <polyline points="7 10 12 15 17 10"></polyline>
                     <line x1="12" y1="15" x2="12" y2="3"></line>
                 </svg>
-                外部导入
+                <span data-i18n="widgets.external_import">外部导入</span>
             </button>
         </div>
         <div class="store-widgets-grid" id="store-widgets-grid"></div>
@@ -861,7 +861,7 @@
     <div class="loading-spinner"></div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast"></div><br><br>
 
 <div class="confirm-modal" id="confirm-modal">
     <div class="confirm-content">
@@ -877,19 +877,19 @@
 <div class="modal-overlay" id="external-import-modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>外部导入</h3>
+            <h3 data-i18n="widgets.external_import_title">外部导入</h3>
             <button class="modal-close" id="external-import-close-btn">&times;</button>
         </div>
         <div class="modal-body">
             <div class="form-group">
-                <label for="external-widget-url">小组件 JSON 地址</label>
-                <input type="url" id="external-widget-url" placeholder="https://example.com/widgets.json" />
+                <label for="external-widget-url" data-i18n="widgets.external_import_url">小组件 JSON 地址</label>
+                <input type="url" id="external-widget-url" placeholder="https://example.com/widgets.json" data-i18n-placeholder="widgets.external_import_url_placeholder" />
             </div>
-            <p class="form-hint">输入包含小组件配置的 JSON 文件网络地址</p>
+            <p class="form-hint" data-i18n="widgets.external_import_hint">输入包含小组件配置的 JSON 文件网络地址</p>
         </div>
         <div class="modal-footer">
-            <button class="modal-btn cancel" id="external-import-cancel-btn">取消</button>
-            <button class="modal-btn primary" id="external-import-confirm-btn">导入</button>
+            <button class="modal-btn cancel" id="external-import-cancel-btn" data-i18n="common.cancel">取消</button>
+            <button class="modal-btn primary" id="external-import-confirm-btn" data-i18n="widgets.import">导入</button>
         </div>
     </div>
 </div>
@@ -903,17 +903,17 @@
                     <line x1="12" y1="9" x2="12" y2="13"></line>
                     <line x1="12" y1="17" x2="12.01" y2="17"></line>
                 </svg>
-                安全警告
+                <span data-i18n="widgets.security_warning_title">安全警告</span>
             </h3>
         </div>
         <div class="modal-body">
-            <p class="security-intro">您正在导入来源不明的外部小组件，这可能存在以下风险：</p>
+            <p class="security-intro" data-i18n="widgets.security_warning_intro">您正在导入来源不明的外部小组件，这可能存在以下风险：</p>
             <ul id="security-warning-list" class="security-risk-list"></ul>
-            <p class="security-conclusion">是否继续导入？SimpMC 不对使用外部小组件而导致的问题负责。</p>
+            <p class="security-conclusion" data-i18n="widgets.security_warning_conclusion">是否继续导入？SimpMC 不对使用外部小组件而导致的问题负责。</p>
         </div>
         <div class="modal-footer">
-            <button class="modal-btn cancel" id="security-warning-cancel-btn">取消</button>
-            <button class="modal-btn danger" id="security-warning-confirm-btn">我已知风险，继续导入</button>
+            <button class="modal-btn cancel" id="security-warning-cancel-btn" data-i18n="widgets.security_warning_cancel">取消</button>
+            <button class="modal-btn danger" id="security-warning-confirm-btn" data-i18n="widgets.security_warning_confirm">我已知风险，继续导入</button>
         </div>
     </div>
 </div>
@@ -921,15 +921,15 @@
 <div class="modal-overlay" id="widget-config-modal">
     <div class="modal-content widget-config">
         <div class="modal-header">
-            <h3 id="widget-config-title">配置小组件</h3>
+            <h3 id="widget-config-title" data-i18n="widgets.config_title">配置小组件</h3>
             <button class="modal-close" id="widget-config-close-btn">&times;</button>
         </div>
         <div class="modal-body">
             <form id="widget-config-form"></form>
         </div>
         <div class="modal-footer">
-            <button class="modal-btn cancel" id="widget-config-cancel-btn">取消</button>
-            <button class="modal-btn primary" id="widget-config-confirm-btn">保存</button>
+            <button class="modal-btn cancel" id="widget-config-cancel-btn" data-i18n="common.cancel">取消</button>
+            <button class="modal-btn primary" id="widget-config-confirm-btn" data-i18n="widgets.save">保存</button>
         </div>
     </div>
 </div>

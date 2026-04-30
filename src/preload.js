@@ -62,5 +62,7 @@ contextBridge.exposeInMainWorld('simpmcAPI', {
     saveWidgetPositions: (positions) => ipcRenderer.invoke('save_widget_positions', positions),
     addWidget: (widget) => ipcRenderer.invoke('add_widget', widget),
     removeWidget: (widgetId) => ipcRenderer.invoke('remove_widget', widgetId),
-    updateWidget: (widgetId, updates) => ipcRenderer.invoke('update_widget', widgetId, updates)
+    updateWidget: (widgetId, updates) => ipcRenderer.invoke('update_widget', widgetId, updates),
+    openExternal: (url) => ipcRenderer.invoke('open_external', url),
+    getGithubContributors: () => ipcRenderer.invoke('get_github_contributors')
 });

@@ -1,0 +1,119 @@
+.update-reminder{
+    background-color: #1d81e4;
+    color: white;
+    border-radius: 12px 0px 0px 12px;
+    position: fixed;
+    right: 0px;
+    top: 70px;
+    left: auto;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    padding: 15px 20px 15px 60px;
+    box-shadow: 0 0 10px #1d81e4;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+    transform: translateX(120%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    cursor: pointer;
+}
+
+.update-reminder-visible {
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    animation: blink 1s infinite alternate;
+}
+
+.update-reminder-visible.update-reminder-error {
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.update-reminder-visible.update-reminder-snapshot {
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.update-reminder-hidden {
+    transform: translateX(120%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.update-reminder-error,
+.update-reminder-snapshot{
+    color: white;
+    border-radius: 12px 0px 0px 12px;
+    position: fixed;
+    right: 0px;
+    top: 70px;
+    left: auto;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    padding: 15px 20px 15px 60px;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+    cursor: pointer;
+}
+
+.update-reminder-error {
+    background-color: #e4591d;
+    box-shadow: 0 0 10px #e4591d;
+}
+
+.update-reminder-snapshot {
+    background-color: #d68e00;
+    box-shadow: 0 0 10px #d68e00;
+}
+
+.update-reminder-logo{
+    position: absolute;
+    top: 21px;
+    left: 15px;
+    height: 40px;
+    width: 40px;
+    filter: brightness(0) invert(1);
+}
+
+.update-reminder-content{
+    margin-top: 1px;
+    margin-left: 5px;
+    top: 13px;
+    height: 50px;
+}
+
+.update-reminder-title{
+    font-size: 110%;
+    font-weight: bold;
+}
+
+.update-reminder-info{
+    font-size: 90%;
+    margin-top: 3px;
+}
+
+@keyframes blink {
+    from{
+        box-shadow: 0 0 5px #1d81e4 ;
+    }
+    to{
+        box-shadow: 0 0 10px #1d81e4 ;
+    }
+}
+
+@keyframes blink-error {
+    from{
+        box-shadow: 0 0 5px rgba(228,89,29,0.9) ;
+    }
+    to{
+        box-shadow: 0 0 10px rgba(228,89,29,0.9) ;
+    }
+}

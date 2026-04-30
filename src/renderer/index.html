@@ -3,15 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <title data-i18n="launcher.title"></title>
+
+    <!-- 引用 js 代码 -->
     <script src="script.js"></script>
     <script src="i18n.js"></script>
     <script src="js/carousel.js"></script>
     <script src="js/widgets.js"></script>
     <script src="js/widgets_render.js"></script>
+    <script src="js/update_checker.js"></script>
+
+    <!-- 引用 css 样式 -->
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/update.css">
 </head>
 <body>
-    <!-- 背景容器，用于实现毛玻璃效果 -->
+    <!-- 背景容器 -->
     <div class="background-container"></div>
     <div class="main-container">
         <div class="title-bar">
@@ -166,15 +172,26 @@
             </button>
         </div>
         
-        <!-- 音乐浮窗提示 -->
+        <!-- 音乐浮窗提示（未启用时） -->
         <div class="music-float-hint" id="music-float-hint">
             <div class="music-float-hint-content">
                 <span data-i18n="music.float_window_disabled"></span>
             </div>
         </div>
+
+        <!-- 更新提示弹窗 -->
+        <div id="update-reminder" class="update-reminder update-reminder-hidden" role="button" aria-live="polite">
+            <div class="update-reminder-logo">
+                <img src="../assets/icon/arrow-rotate-right-solid-full.svg" alt="update">
+            </div>
+            <div class="update-reminder-content">
+                <div class="update-reminder-title" id="update-reminder-title">新版本可用！</div>
+                <div class="update-reminder-info" id="update-reminder-content">新版本 「V 0.0.1」可用，点击前往下载。</div>
+            </div>
+        </div>
     </div>
     
-    <!-- 音乐浮窗 (放在主容器外面，避免受到transform影响) -->
+    <!-- 音乐浮窗 -->
     <div class="music-float-overlay" id="music-float-overlay"></div>
     <div class="music-float" id="music-float">
         <div class="music-float-header">
@@ -204,5 +221,6 @@
             </div>
         </div>
     </div>
+
 </body>
 </html>

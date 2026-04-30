@@ -63,20 +63,35 @@ function compareVersions(a, b) {
 
 function showUpdateNotification(updates) {
     const names = updates.map(u => `"${u.name}" (${u.oldVersion} → ${u.newVersion})`).join('\n');
+    const message = i18n('widgets.update_available_message').replace('{list}', names);
     showConfirmModal(
-        '发现更新',
-        `以下小组件有新版本可用：\n\n${names}\n\n是否立即更新？`,
-        () => {
+        i18n('widgets.update_available'),
+        message,
+        async () => {
+            const updatesApplied = [];
             updates.forEach(update => {
                 const widget = installedWidgets.find(w => w.type === update.type);
-                if (widget) {
-                    widget.version = update.newVersion;
+                const template = WIDGET_TEMPLATES[update.type];
+                if (widget && template) {
+                    const preservedConfig = widget.config || {};
+                    widget.name = template.name;
+                    widget.size = template.size;
+                    widget.desc = template.desc;
+                    widget.category = template.category;
+                    widget.version = template.version;
+                    widget.template = { ...template };
+                    widget.source = template.source || 'official';
+                    widget.sourceUrl = template.sourceUrl;
+                    widget.config = preservedConfig;
+                    updatesApplied.push(widget.type);
                 }
             });
-            window.simpmcAPI.saveWidgets(installedWidgets).then(() => {
-                showToast('小组件已更新', 'success');
+
+            if (updatesApplied.length > 0) {
+                await window.simpmcAPI.saveWidgets(installedWidgets);
+                showToast(i18n('widgets.update_success'), 'success');
                 renderInstalledWidgets();
-            });
+            }
         }
     );
 }
@@ -138,7 +153,7 @@ function showWidgetConfigModal(widgetId) {
     
     const template = getTemplate(widget);
     if (!template || !template.config || template.config.length === 0) {
-        showToast('该小组件不支持配置', 'info');
+        showToast(i18n('widgets.no_config_support'), 'info');
         return;
     }
     
@@ -147,7 +162,7 @@ function showWidgetConfigModal(widgetId) {
     const formEl = document.getElementById('widget-config-form');
     if (!modal || !titleEl || !formEl) return;
     
-    titleEl.textContent = `配置 ${widget.name}`;
+    titleEl.textContent = `${i18n('widgets.config')} ${widget.name}`;
     
     formEl.innerHTML = template.config.map(field => {
         const value = widget.config?.[field.key] ?? field.default;
@@ -202,10 +217,10 @@ function showWidgetConfigModal(widgetId) {
         try {
             await window.simpmcAPI.saveWidgets(installedWidgets);
             renderInstalledWidgets();
-            showToast('配置已保存', 'success');
+            showToast(i18n('widgets.save_success'), 'success');
         } catch (error) {
             console.error('保存配置失败:', error);
-            showToast('保存失败', 'error');
+            showToast(i18n('widgets.save_failed'), 'error');
         }
         
         closeWidgetConfigModal();
@@ -280,12 +295,7 @@ function showSecurityWarningModal(widgetData, onConfirm) {
     const list = document.getElementById('security-warning-list');
     if (!modal || !list) return;
 
-    const risks = [
-        '代码可能包含恶意脚本，窃取您的个人信息',
-        '代码可能在您不知情的情况下发送数据到第三方服务器',
-        '代码可能影响启动器的正常运行',
-        '来源不明的代码无法保证其安全性'
-    ];
+    const risks = i18n('widgets.security_warning_risks');
 
     list.innerHTML = risks.map(risk => `<li>${risk}</li>`).join('');
     modal.classList.add('show');
@@ -310,14 +320,14 @@ async function loadWidgetsPage() {
         checkForUpdates();
     } catch (error) {
         console.error('加载小组件失败:', error);
-        showToast('加载小组件失败', 'error');
+        showToast(i18n('widgets.load_failed'), 'error');
     } finally {
         hideLoading();
     }
 }
 
 function getTemplate(widget) {
-    return WIDGET_TEMPLATES[widget.type] || externalWidgets[widget.type] || null;
+    return widget.template || WIDGET_TEMPLATES[widget.type] || externalWidgets[widget.type] || null;
 }
 
 function renderInstalledWidgets() {
@@ -333,7 +343,7 @@ function renderInstalledWidgets() {
                         <polyline points="14 2 14 8 20 8"></polyline>
                     </svg>
                 </div>
-                <p class="empty-installed-text">还没有安装任何小组件</p>
+                <p class="empty-installed-text">${i18n('widgets.no_installed_widgets')}</p>
             </div>
         `;
         return;
@@ -350,10 +360,10 @@ function renderInstalledWidgets() {
                         <div class="installed-widget-name">
                             ${widget.name}
                             <span class="widget-source-badge ${isExternal ? 'external' : 'official'}">
-                                ${isExternal ? '外部' : '官方'}
+                                ${isExternal ? i18n('widgets.external') : i18n('widgets.official')}
                             </span>
                             <span class="widget-type-badge ${widget.enabled ? 'enabled' : 'disabled'}">
-                                ${widget.enabled ? '启用' : '禁用'}
+                                ${widget.enabled ? i18n('widgets.enabled') : i18n('widgets.disabled')}
                             </span>
                         </div>
                         <div class="installed-widget-size">
@@ -362,7 +372,7 @@ function renderInstalledWidgets() {
                         </div>
                     </div>
                     <div class="installed-widget-actions">
-                        <button class="widget-action-btn move" title="拖动排序">
+                        <button class="widget-action-btn move" title="${i18n('widgets.drag_hint')}">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <circle cx="9" cy="5" r="2"></circle>
                                 <circle cx="15" cy="5" r="2"></circle>
@@ -373,20 +383,20 @@ function renderInstalledWidgets() {
                             </svg>
                         </button>
                         ${template?.config?.length > 0 ? `
-                        <button class="widget-action-btn config widget-config-btn" data-widget-id="${widget.id}" title="配置">
+                        <button class="widget-action-btn config widget-config-btn" data-widget-id="${widget.id}" title="${i18n('widgets.config')}">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="3"></circle>
                                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                             </svg>
                         </button>
                         ` : ''}
-                        <button class="widget-action-btn widget-toggle-btn" data-widget-id="${widget.id}" title="${widget.enabled ? '禁用' : '启用'}">
+                        <button class="widget-action-btn widget-toggle-btn" data-widget-id="${widget.id}" title="${widget.enabled ? i18n('widgets.disabled') : i18n('widgets.enabled')}">
                             ${widget.enabled ?
                                 '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>' :
                                 '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>'
                             }
                         </button>
-                        <button class="widget-action-btn delete widget-remove-btn" data-widget-id="${widget.id}" title="删除">
+                        <button class="widget-action-btn delete widget-remove-btn" data-widget-id="${widget.id}" title="${i18n('widgets.remove')}">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="3 6 5 6 21 6"></polyline>
                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -395,7 +405,7 @@ function renderInstalledWidgets() {
                     </div>
                 </div>
                 <div class="installed-widget-preview">
-                    ${template?.desc || '预览区域'}
+                    ${template?.desc || i18n('widgets.preview_area')}
                 </div>
             </div>
         `;
@@ -429,7 +439,7 @@ function renderStoreWidgets() {
                         <line x1="12" y1="16" x2="12.01" y2="16"></line>
                     </svg>
                 </div>
-                <p class="empty-installed-text">无法加载小组件商店</p>
+                <p class="empty-installed-text">${i18n('widgets.store_load_failed')}</p>
             </div>
         `;
         return;
@@ -452,8 +462,8 @@ function renderStoreWidgets() {
                 </div>
                 <p class="store-widget-desc">${template.desc || ''}</p>
                 <div class="store-widget-meta">
-                    <span>分类: ${template.category || 'other'}</span>
-                    <button class="store-widget-add-btn" data-widget-type="${type}">添加</button>
+                    <span>${i18n('widgets.category_label')}: ${template.category || 'other'}</span>
+                    <button class="store-widget-add-btn" data-widget-type="${type}">${i18n('widgets.add')}</button>
                 </div>
             </div>
         `}).join('');
@@ -473,8 +483,8 @@ function renderStoreWidgets() {
                     </div>
                     <p class="store-widget-desc">${template.desc || ''}</p>
                     <div class="store-widget-meta">
-                        <span>来源: 外部导入</span>
-                        <button class="store-widget-add-btn" data-widget-type="${type}">添加</button>
+                        <span>${i18n('widgets.source')}: ${i18n('widgets.external')}</span>
+                        <button class="store-widget-add-btn" data-widget-type="${type}">${i18n('widgets.add')}</button>
                     </div>
                 </div>
             `}).join('');
@@ -492,7 +502,7 @@ function renderStoreWidgets() {
                         <line x1="15" y1="9" x2="15.01" y2="9"></line>
                     </svg>
                 </div>
-                <p class="empty-installed-text">没有可添加的小组件</p>
+                <p class="empty-installed-text">${i18n('widgets.no_addable_widgets')}</p>
             </div>
         `;
     }
@@ -591,10 +601,10 @@ async function toggleWidgetInstalled(widgetId) {
             await window.simpmcAPI.saveWidgets(installedWidgets);
             window.widgets = installedWidgets;
             renderInstalledWidgets();
-            showToast(widget.enabled ? '已启用' : '已禁用', 'success');
+            showToast(widget.enabled ? i18n('widgets.enabled') : i18n('widgets.disabled'), 'success');
         } catch (error) {
             console.error('切换状态失败:', error);
-            showToast('操作失败', 'error');
+            showToast(i18n('widgets.operation_failed'), 'error');
         }
     }
 }
@@ -603,9 +613,10 @@ function confirmRemoveWidget(widgetId) {
     const widget = installedWidgets.find(w => w.id === widgetId);
     if (!widget) return;
 
+    const message = i18n('widgets.remove_confirm_message').replace('{name}', widget.name);
     showConfirmModal(
-        '删除小组件',
-        `确定要删除 "${widget.name}" 吗？删除后可以在商店重新添加。`,
+        i18n('widgets.remove_confirm_title'),
+        message,
         async () => {
             try {
                 await window.simpmcAPI.removeWidget(widgetId);
@@ -613,10 +624,10 @@ function confirmRemoveWidget(widgetId) {
                 window.widgets = installedWidgets;
                 renderInstalledWidgets();
                 renderStoreWidgets();
-                showToast('已删除', 'success');
+                showToast(i18n('widgets.removed'), 'success');
             } catch (error) {
                 console.error('删除失败:', error);
-                showToast('删除失败', 'error');
+                showToast(i18n('widgets.remove_failed'), 'error');
             }
             closeConfirmModal();
         }
@@ -635,7 +646,9 @@ async function addWidgetFromStore(type) {
         enabled: true,
         config: {},
         source: template.source,
-        sourceUrl: template.sourceUrl
+        sourceUrl: template.sourceUrl,
+        version: template.version,
+        template: { ...template }
     };
 
     try {
@@ -644,10 +657,10 @@ async function addWidgetFromStore(type) {
         window.widgets = installedWidgets;
         renderInstalledWidgets();
         renderStoreWidgets();
-        showToast(`已添加 ${template.name}`, 'success');
+        showToast(i18n('widgets.added').replace('{name}', template.name), 'success');
     } catch (error) {
         console.error('添加失败:', error);
-        showToast('添加失败', 'error');
+        showToast(i18n('widgets.add_failed'), 'error');
     }
 }
 
@@ -659,13 +672,13 @@ async function importExternalWidget(url) {
             Object.assign(externalWidgets, widgets);
             window.externalWidgets = externalWidgets;
             renderStoreWidgets();
-            showToast('外部小组件导入成功', 'success');
+            showToast(i18n('widgets.external_import_success'), 'success');
         } else {
-            showToast('未找到有效的小组件', 'error');
+            showToast(i18n('widgets.no_valid_widgets'), 'error');
         }
     } catch (error) {
         console.error('导入失败:', error);
-        showToast('导入失败', 'error');
+        showToast(i18n('widgets.import_failed'), 'error');
     } finally {
         hideLoading();
         closeExternalImportModal();
@@ -710,7 +723,7 @@ function renderWidgetContent(widgetId) {
                 content = renderFn(widget.config || {}, widget);
             } catch (e) {
                 console.error('渲染函数执行失败:', e);
-                content = '<div>渲染错误</div>';
+                content = `<div>${i18n('widgets.render_error')}</div>`;
             }
         }
 
@@ -722,7 +735,7 @@ function renderWidgetContent(widgetId) {
         }
     } catch (e) {
         console.error('渲染小组件内容失败:', e);
-        contentEl.innerHTML = '<div>加载失败</div>';
+        contentEl.innerHTML = `<div>${i18n('widgets.error')}</div>`;
     }
 }
 
@@ -751,7 +764,7 @@ document.addEventListener('click', (e) => {
             if (input && input.value.trim()) {
                 importExternalWidget(input.value.trim());
             } else {
-                showToast('请输入有效的 URL', 'error');
+                showToast(i18n('widgets.invalid_url'), 'error');
             }
         });
         showExternalImportModal();
@@ -768,7 +781,7 @@ document.addEventListener('click', (e) => {
             closeSecurityWarningModal();
             importExternalWidget(input.value.trim());
         } else {
-            showToast('请输入有效的 URL', 'error');
+            showToast(i18n('widgets.invalid_url'), 'error');
         }
     }
 

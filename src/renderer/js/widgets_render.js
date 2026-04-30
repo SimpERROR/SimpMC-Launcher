@@ -1,5 +1,8 @@
 let widgets = [];
 let draggedWidget = null;
+let draggedWidgetId = null;
+let dragPreview = null;
+let dragPreviewInfo = null;
 let gridConfig = {
     columns: 4,
     cellWidth: 0,
@@ -27,7 +30,8 @@ function injectWidgetStyles(template) {
 }
 
 async function loadHomePage() {
-    await loadWidgetTemplates();
+    // 只在需要时加载模板（比如显示商店时）
+    // await loadWidgetTemplates();
     await loadWidgets();
     renderWidgets();
 }
@@ -67,7 +71,7 @@ function calculateLayout() {
         if (!widget.enabled) return;
 
         const WIDGET_TEMPLATES = getWTTemplates();
-        const template = WIDGET_TEMPLATES[widget.type] || externalWidgets[widget.type];
+        const template = widget.template || WIDGET_TEMPLATES[widget.type] || externalWidgets[widget.type];
         if (!template) return;
 
         const { width, height } = getWidgetSize(widget);
@@ -162,7 +166,7 @@ function renderWidgets() {
 
     grid.innerHTML = placements.map(placement => {
         const { widget, x, y, w, h } = placement;
-        const template = WIDGET_TEMPLATES[widget.type] || externalWidgets[widget.type];
+        const template = widget.template || WIDGET_TEMPLATES[widget.type] || externalWidgets[widget.type];
         if (!template) return '';
 
         injectWidgetStyles(template);
@@ -222,7 +226,7 @@ function initWidgetScripts() {
     const WIDGET_TEMPLATES = getWTTemplates();
     widgets.forEach(widget => {
         if (!widget.enabled) return;
-        const template = WIDGET_TEMPLATES[widget.type] || externalWidgets[widget.type];
+        const template = widget.template || WIDGET_TEMPLATES[widget.type] || externalWidgets[widget.type];
         console.log('检查小组件:', widget.type, '模板:', template ? '找到' : '未找到', '脚本:', template?.scripts ? '有' : '无');
         if (!template || !template.scripts) return;
 
@@ -268,14 +272,56 @@ function initWidgetDrag() {
 
 function handleDragStart(e) {
     draggedWidget = this;
+    draggedWidgetId = this.dataset.widgetId;
     this.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', this.dataset.widgetId);
+    
+    const grid = document.getElementById('widgets-grid');
+    const rect = grid.getBoundingClientRect();
+    
+    dragPreview = document.createElement('div');
+    dragPreview.className = 'drag-preview';
+    dragPreview.style.width = this.offsetWidth + 'px';
+    dragPreview.style.height = this.offsetHeight + 'px';
+    dragPreview.style.position = 'absolute';
+    dragPreview.style.pointerEvents = 'none';
+    dragPreview.style.opacity = '0.7';
+    dragPreview.style.border = '2px dashed #4facfe';
+    dragPreview.style.borderRadius = '12px';
+    dragPreview.style.backgroundColor = 'rgba(79, 172, 254, 0.1)';
+    dragPreview.style.zIndex = '1000';
+    dragPreview.style.display = 'none';
+    grid.appendChild(dragPreview);
+    
+    dragPreviewInfo = document.createElement('div');
+    dragPreviewInfo.className = 'drag-preview-info';
+    dragPreviewInfo.style.position = 'absolute';
+    dragPreviewInfo.style.pointerEvents = 'none';
+    dragPreviewInfo.style.padding = '4px 8px';
+    dragPreviewInfo.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+    dragPreviewInfo.style.color = '#fff';
+    dragPreviewInfo.style.borderRadius = '4px';
+    dragPreviewInfo.style.fontSize = '12px';
+    dragPreviewInfo.style.zIndex = '1001';
+    dragPreviewInfo.style.display = 'none';
+    grid.appendChild(dragPreviewInfo);
 }
 
 function handleDragEnd(e) {
     this.classList.remove('dragging');
     draggedWidget = null;
+    draggedWidgetId = null;
+    
+    if (dragPreview) {
+        dragPreview.remove();
+        dragPreview = null;
+    }
+    if (dragPreviewInfo) {
+        dragPreviewInfo.remove();
+        dragPreviewInfo = null;
+    }
+    
     document.querySelectorAll('.widget-card').forEach(card => {
         card.classList.remove('drag-over');
     });
@@ -284,6 +330,109 @@ function handleDragEnd(e) {
 function handleGridDragOver(e) {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
+
+    if (!draggedWidget || !dragPreview) return;
+
+    const grid = document.getElementById('widgets-grid');
+    const rect = grid.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const widget = widgets.find(w => w.id === draggedWidgetId);
+    if (!widget) return;
+
+    const { width, height } = getWidgetSize(widget);
+
+    const col = Math.floor(x / (gridConfig.cellWidth + gridConfig.gap));
+    const row = Math.floor(y / (gridConfig.cellHeight + gridConfig.gap));
+
+    const clampedCol = Math.max(0, Math.min(col, gridConfig.columns - width));
+    const clampedRow = Math.max(0, row);
+
+    const occupiedGrid = buildOccupiedGridForCheck(draggedWidgetId);
+    const canPlaceDirectly = checkCanPlaceAtDirect(clampedCol, clampedRow, width, height, occupiedGrid);
+
+    let finalCol = clampedCol;
+    let finalRow = clampedRow;
+
+    if (!canPlaceDirectly) {
+        const alternatives = [];
+        for (let r = 0; r < 100; r++) {
+            for (let c = 0; c < gridConfig.columns; c++) {
+                if (canPlaceAtGrid(occupiedGrid, r, c, width, height)) {
+                    const dist = Math.abs(r - clampedRow) + Math.abs(c - clampedCol);
+                    alternatives.push({ col: c, row: r, dist });
+                }
+            }
+        }
+        alternatives.sort((a, b) => a.dist - b.dist);
+        if (alternatives.length > 0) {
+            finalCol = alternatives[0].col;
+            finalRow = alternatives[0].row;
+        }
+    }
+
+    const previewX = finalCol * (gridConfig.cellWidth + gridConfig.gap);
+    const previewY = finalRow * (gridConfig.cellHeight + gridConfig.gap);
+    const previewW = width * gridConfig.cellWidth + (width - 1) * gridConfig.gap;
+    const previewH = height * gridConfig.cellHeight + (height - 1) * gridConfig.gap;
+
+    dragPreview.style.display = 'block';
+    dragPreview.style.left = previewX + 'px';
+    dragPreview.style.top = previewY + 'px';
+    dragPreview.style.width = previewW + 'px';
+    dragPreview.style.height = previewH + 'px';
+
+    if (canPlaceDirectly) {
+        dragPreview.style.borderColor = '#4facfe';
+        dragPreview.style.backgroundColor = 'rgba(79, 172, 254, 0.1)';
+        dragPreviewInfo.textContent = i18n('widgets.can_place') || '可以放置';
+        dragPreviewInfo.style.backgroundColor = 'rgba(34, 197, 94, 0.9)';
+    } else {
+        dragPreview.style.borderColor = '#ef4444';
+        dragPreview.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+        dragPreviewInfo.textContent = i18n('widgets.cannot_place') || '无法放置';
+        dragPreviewInfo.style.backgroundColor = 'rgba(239, 68, 68, 0.9)';
+    }
+
+    dragPreviewInfo.style.display = 'block';
+    dragPreviewInfo.style.left = (previewX + 4) + 'px';
+    dragPreviewInfo.style.top = (previewY - 24) + 'px';
+}
+
+function checkCanPlaceAt(col, row, width, height, excludeWidgetId) {
+    const occupiedGrid = buildOccupiedGridForCheck(excludeWidgetId);
+    
+    for (let r = row; r < row + height && r < occupiedGrid.length; r++) {
+        for (let c = col; c < col + width && c < occupiedGrid[0].length; c++) {
+            if (r >= 0 && c >= 0 && occupiedGrid[r] && occupiedGrid[r][c]) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+function buildOccupiedGridForCheck(excludeWidgetId) {
+    const grid = Array.from({ length: 100 }, () => Array(gridConfig.columns).fill(false));
+    const WIDGET_TEMPLATES = getWTTemplates();
+
+    widgets.forEach(widget => {
+        if (!widget.enabled || widget.id === excludeWidgetId) return;
+        const template = widget.template || WIDGET_TEMPLATES[widget.type] || externalWidgets[widget.type];
+        if (!template) return;
+
+        const pos = widget.position || { col: 0, row: 0 };
+        const { width, height } = getWidgetSize(widget);
+
+        for (let r = pos.row; r < pos.row + height && r < grid.length; r++) {
+            for (let c = pos.col; c < pos.col + width && c < grid[0].length; c++) {
+                if (grid[r]) grid[r][c] = true;
+            }
+        }
+    });
+
+    return grid;
 }
 
 function handleGridDrop(e) {
@@ -295,8 +444,8 @@ function handleGridDrop(e) {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    const col = Math.round(x / (gridConfig.cellWidth + gridConfig.gap));
-    const row = Math.round(y / (gridConfig.cellHeight + gridConfig.gap));
+    const col = Math.floor(x / (gridConfig.cellWidth + gridConfig.gap));
+    const row = Math.floor(y / (gridConfig.cellHeight + gridConfig.gap));
 
     const widgetId = draggedWidget.dataset.widgetId;
     const widget = widgets.find(w => w.id === widgetId);
@@ -318,11 +467,32 @@ function reorderWidget(widgetId, newCol, newRow) {
 
     widgets.splice(widgetIndex, 1);
 
-    const occupiedGrid = buildOccupiedGrid();
-    const placed = tryPlaceAt(occupiedGrid, widget, newCol, newRow, width, height);
+    const occupiedGrid = buildOccupiedGridForCheck(widgetId);
+    const canPlaceDirectly = checkCanPlaceAtDirect(newCol, newRow, width, height, occupiedGrid);
 
-    if (!placed) {
+    if (canPlaceDirectly) {
+        widget.position = { col: newCol, row: newRow };
         widgets.push(widget);
+    } else {
+        const alternatives = [];
+        for (let r = 0; r < 100; r++) {
+            for (let c = 0; c < gridConfig.columns; c++) {
+                if (canPlaceAtGrid(occupiedGrid, r, c, width, height)) {
+                    const dist = Math.abs(r - newRow) + Math.abs(c - newCol);
+                    alternatives.push({ col: c, row: r, dist });
+                }
+            }
+        }
+
+        alternatives.sort((a, b) => a.dist - b.dist);
+
+        if (alternatives.length > 0) {
+            const best = alternatives[0];
+            widget.position = { col: best.col, row: best.row };
+            widgets.push(widget);
+        } else {
+            widgets.push(widget);
+        }
     }
 
     window.simpmcAPI.saveWidgets(widgets).then(() => {
@@ -333,13 +503,33 @@ function reorderWidget(widgetId, newCol, newRow) {
     });
 }
 
+function canPlaceAtGrid(grid, row, col, width, height) {
+    for (let r = row; r < row + height && r < grid.length; r++) {
+        for (let c = col; c < col + width && c < grid[0].length; c++) {
+            if (r < 0 || c < 0) return false;
+            if (grid[r] && grid[r][c]) return false;
+        }
+    }
+    return true;
+}
+
+function checkCanPlaceAtDirect(col, row, width, height, occupiedGrid) {
+    for (let r = row; r < row + height && r < occupiedGrid.length; r++) {
+        for (let c = col; c < col + width && c < occupiedGrid[0].length; c++) {
+            if (r < 0 || c < 0) return false;
+            if (occupiedGrid[r] && occupiedGrid[r][c]) return false;
+        }
+    }
+    return true;
+}
+
 function buildOccupiedGrid() {
     const grid = Array.from({ length: 100 }, () => Array(gridConfig.columns).fill(false));
     const WIDGET_TEMPLATES = getWTTemplates();
 
     widgets.forEach(widget => {
         if (!widget.enabled) return;
-        const template = WIDGET_TEMPLATES[widget.type] || externalWidgets[widget.type];
+        const template = widget.template || WIDGET_TEMPLATES[widget.type] || externalWidgets[widget.type];
         if (!template) return;
 
         const pos = widget.position || { col: 0, row: 0 };
