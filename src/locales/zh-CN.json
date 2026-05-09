@@ -136,7 +136,12 @@
         "background_music": "背景音乐",
         "music_enabled": "音乐开关",
         "no_music_playing": "暂无音乐播放",
-        "music_hint": "音乐文件应放置在 SimpMC/music 目录下。\n在启动器内按下 Ctrl 并滚动滚轮可快速调整音量。"
+        "music_hint": "音乐文件应放置在 SimpMC/music 目录下。\n启动器内 Ctrl + 滚轮 快速调整音量， Ctrl + M 调出音乐浮窗。\n前往我们的网站了解更多。",
+        "bg_img": "背景图片",
+        "bg_img_enable": "背景图片开关",
+        "bg_img_hint": "背景图片应放置在 SimpMC/bg_images 目录下。\n每次启动时，SimpMC 会随机抽取一张图片作为背景。\n前往我们的网站了解更多。",
+        "bg_mask_brightness": "背景图片亮度",
+        "bg_mask_blur": "背景图片模糊度"
     },
     "profile": {
         "title": "管理档案",

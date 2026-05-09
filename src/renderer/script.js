@@ -209,6 +209,10 @@ async function initApp() {
     const onboardingContainer = document.getElementById('onboarding-container');
     const menuContainer = document.getElementById('menu-container');
     const pageContent = document.getElementById('page-content');
+
+    const bg_enabled = await window.simpmcAPI.getBgSetting();
+
+    console.log('[Bg] 背景图片启动：',bg_enabled);
     
     const isFirstRun = await checkFirstRun();
     if (isFirstRun) {
@@ -236,6 +240,9 @@ async function initApp() {
         if (pageContent) {
             pageContent.style.display = 'block';
             pageContent.style.zIndex = '1';
+        }
+        if(bg_enabled.enabled){
+            change_bg();
         }
         await switchPage('home');
     }
@@ -573,6 +580,7 @@ async function switchPage(pageName) {
             loadDownloadSettingsPage();
         } else if (pageName === 'personalization') {
             loadPersonalizationPage();
+            update_bg_setting_shown();
         } else if (pageName === 'discovery') {
             loadCarousel()        
         } else if (pageName === 'widgets') {
@@ -665,7 +673,9 @@ async function loadPersonalizationPage() {
         }
         
         const musicSettings = await window.simpmcAPI.getMusicSettings();
+        const bgSetting = await window.simpmcAPI.getBgSetting();
         const musicToggle = document.getElementById('music-toggle');
+        const bgToggle = document.getElementById('bg-toggle')
         const volumeSlider = document.getElementById('volume-slider');
         
         if (musicToggle) {
@@ -673,6 +683,14 @@ async function loadPersonalizationPage() {
                 musicToggle.classList.add('active');
             } else {
                 musicToggle.classList.remove('active');
+            }
+        }
+
+        if (bgToggle) {
+            if (bgSetting.enabled) {
+                bgToggle.classList.add('active');
+            } else {
+                bgToggle.classList.remove('active');
             }
         }
         
@@ -726,8 +744,29 @@ async function toggleMusic() {
                 }
             }
         }
+        showSaveStatus('设置已保存');
     } catch (error) {
         console.error('Failed to toggle music:', error);
+    }
+}
+
+async function toggleBg() {
+    try {
+        const newState = await window.simpmcAPI.toggleBg();
+        const bgToggle = document.getElementById('bg-toggle');
+        if (bgToggle) {
+            if (newState) {
+                bgToggle.classList.add('active');
+                change_bg();
+            } else {
+                bgToggle.classList.remove('active');
+                hidden_bg();
+            }
+        }
+        showSaveStatus('设置已保存');
+        update_bg_setting_shown();
+    } catch (error) {
+        console.error('无法切换背景图片设置：', error);
     }
 }
 

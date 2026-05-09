@@ -11,6 +11,8 @@
     <script src="js/widgets.js"></script>
     <script src="js/widgets_render.js"></script>
     <script src="js/update_checker.js"></script>
+    <script src="js/bg_changer.js"></script>
+    <script src="js/personalization.js"></script>
 
     <!-- 引用 css 样式 -->
     <link rel="stylesheet" href="style.css">
@@ -19,7 +21,8 @@
 <body>
     <!-- 背景容器 -->
     <div class="background-container"></div>
-    <div class="main-container">
+    <div class="main-container" id="main-container">
+    <div class="bg-mask" id="bg-mask"></div>
         <div class="title-bar">
             <div class="title-content">
                 <img src="../assets/logo.svg" alt="Logo" class="title-logo">

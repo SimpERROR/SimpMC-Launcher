@@ -18,11 +18,16 @@ function initStore() {
             name: 'config',
             defaults: {
                 onboardingCompleted: false,
-                appLocale: 'zh-CN',
+                appLocale: 'en-US',
                 character: null,
                 displayName: null,
                 musicEnabled: true,
-                musicVolume: 0.5
+                musicVolume: 0.5,
+                bg: {
+                    enabled: false,
+                    brightness: 0.4,
+                    blur_value: 0
+                }
             }
         });
         console.log('Store initialized successfully');
@@ -60,8 +65,9 @@ app.whenReady().then(() => {
     initStore();
     createWindow();
     
-    // 应用启动时扫描音乐目录，如果没有则自动创建
+    // 应用启动时扫描音乐与背景目录，如果没有则自动创建
     scanMusicDirectory();
+    scanBackgroundDirectory();
 
     app.on('activate', function () {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -642,8 +648,26 @@ function getMusicDirectory() {
     return simpMcDir;
 }
 
+// 获取背景图片目录
+function getBGImageDirectory(){
+    let simpMcDir;
+
+    if (app.isPackaged){
+        const exePath = app.getPath('exe')
+        simpMcDir = path.join(path.dirname(exePath),'SimpMC','bg_images')
+    } else {
+        simpMcDir = path.join(__dirname,'..','..','SimpMC','bg_images')
+    }
+    
+    return simpMcDir;
+}
+
 function getSupportedAudioFiles() {
     return ['.mp3', '.wav', '.ogg', '.flac', '.m4a'];
+}
+
+function getSupportedImageFiles() {
+    return ['.svg', '.png', '.jpg'];
 }
 
 function scanMusicDirectory() {
@@ -679,6 +703,45 @@ function scanMusicDirectory() {
         return audioPaths;
     } catch (error) {
         console.error('[Music] Error scanning music directory:', error);
+        return [];
+    }
+}
+
+function scanBackgroundDirectory(){
+    const bgDir = getBGImageDirectory();
+    
+    console.log('[BG] 扫描背景目录……');
+
+    // 目录不存在，创建
+    if(!fs.existsSync(bgDir)) {
+        try {
+            fs.mkdirSync(bgDir, {recursive : true});
+            console.log('[BG] 创建背景图片目录成功：', bgDir);
+        } catch(error) {
+            console.error('[BG] 无法创建背景图片目录：', error);
+            return [];
+        }
+    } 
+
+    try {
+        const files = fs.readdirSync(bgDir);
+        console.log('[BG] 找到的所有文件:', files);
+        
+        const imageFiles = files.filter(file => {
+            const ext = path.extname(file).toLowerCase();
+            return getSupportedImageFiles().includes(ext);
+        });
+
+        console.log('[BG] 支持的所有文件：', imageFiles);
+
+        const BGPaths = imageFiles.map(file => {
+            return path.join(bgDir, file);
+        });
+        console.log('[BG] 背景目录：', BGPaths);
+
+        return BGPaths;
+    } catch(error) {
+        console.error('[BG] 无法扫描背景目录：', error);
         return [];
     }
 }
@@ -1589,32 +1652,10 @@ ipcMain.handle('select_install_directory', async () => {
     return null;
 });
 
-// 小组件管理 IPC
-const DEFAULT_WIDGETS = [
-    {
-        id: 'welcome',
-        type: 'welcome',
-        name: '欢迎',
-        size: '2x1',
-        x: 0, y: 0,
-        enabled: true,
-        config: {}
-    },
-    {
-        id: 'quick-actions',
-        type: 'quick-actions',
-        name: '快捷操作',
-        size: '1x2',
-        x: 2, y: 0,
-        enabled: true,
-        config: {}
-    }
-];
-
 ipcMain.handle('get_widgets', () => {
     if (!store) return { widgets: DEFAULT_WIDGETS, positions: {} };
     return {
-        widgets: store.get('widgets', DEFAULT_WIDGETS),
+        widgets: store.get('widgets'),
         positions: store.get('widgetPositions', {})
     };
 });
@@ -1633,7 +1674,7 @@ ipcMain.handle('save_widget_positions', (event, positions) => {
 
 ipcMain.handle('add_widget', (event, widget) => {
     if (!store) return false;
-    const widgets = store.get('widgets', DEFAULT_WIDGETS);
+    const widgets = store.get('widgets');
     widgets.push(widget);
     store.set('widgets', widgets);
     return true;
@@ -1641,7 +1682,7 @@ ipcMain.handle('add_widget', (event, widget) => {
 
 ipcMain.handle('remove_widget', (event, widgetId) => {
     if (!store) return false;
-    const widgets = store.get('widgets', DEFAULT_WIDGETS);
+    const widgets = store.get('widgets');
     const filtered = widgets.filter(w => w.id !== widgetId);
     store.set('widgets', filtered);
     return true;
@@ -1649,7 +1690,7 @@ ipcMain.handle('remove_widget', (event, widgetId) => {
 
 ipcMain.handle('update_widget', (event, widgetId, updates) => {
     if (!store) return false;
-    const widgets = store.get('widgets', DEFAULT_WIDGETS);
+    const widgets = store.get('widgets');
     const index = widgets.findIndex(w => w.id === widgetId);
     if (index !== -1) {
         widgets[index] = { ...widgets[index], ...updates };
@@ -1718,5 +1759,64 @@ ipcMain.handle('get_github_contributors', async (event) => {
     } catch (error) {
         console.error('Failed to get contributors:', error);
         return null;
+    }
+});
+
+ipcMain.handle('getBgSetting', () => {
+    if(!store){
+        return {
+            enabled : false
+        };
+    } else {
+        return {
+            enabled: store.get('bg.enabled')
+        }
+    };
+});
+
+ipcMain.handle('toggleBg', () => {
+    if(!store){
+        return false;
+    }
+    const bgsetting = store.get('bg.enabled', false);
+    store.set('bg.enabled', !bgsetting);
+    return store.get('bg.enabled');
+});
+
+ipcMain.handle('getBgDirs', () => {
+    return scanBackgroundDirectory();
+});
+
+ipcMain.handle('setBgBrightness', (event,brightness) => {
+    try{
+        store.set('bg.brightness', brightness);
+        return true;
+    } catch(error) {
+        return false;
+    }
+});
+
+ipcMain.handle('getBgBrightness', () => {
+    try{
+        return store.get('bg.brightness');
+    } catch(error) {
+        return 0;
+    }
+});
+
+ipcMain.handle('setBgBlur', (event,blur) => {
+    try{
+        store.set('bg.blur_value', blur);
+        return true;
+    } catch(error) {
+        return false;
+    }
+});
+
+ipcMain.handle('getBgBlur', () => {
+    try{
+        return store.get('bg.blur_value');
+    } catch(error) {
+        return 0;
     }
 });

@@ -64,5 +64,12 @@ contextBridge.exposeInMainWorld('simpmcAPI', {
     removeWidget: (widgetId) => ipcRenderer.invoke('remove_widget', widgetId),
     updateWidget: (widgetId, updates) => ipcRenderer.invoke('update_widget', widgetId, updates),
     openExternal: (url) => ipcRenderer.invoke('open_external', url),
-    getGithubContributors: () => ipcRenderer.invoke('get_github_contributors')
+    getGithubContributors: () => ipcRenderer.invoke('get_github_contributors'),
+    getBgSetting: () => ipcRenderer.invoke('getBgSetting'),
+    toggleBg: () => ipcRenderer.invoke('toggleBg'),
+    getBgDirs: () => ipcRenderer.invoke('getBgDirs'),
+    setBgBrightness: (brightness) => ipcRenderer.invoke('setBgBrightness', brightness),
+    getBgBrightness: () => ipcRenderer.invoke('getBgBrightness'),
+    setBgBlur: (blur) => ipcRenderer.invoke('setBgBlur', blur),
+    getBgBlur: () => ipcRenderer.invoke('getBgBlur')
 });

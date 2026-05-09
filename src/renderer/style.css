@@ -34,6 +34,18 @@ html, body {
     color: white;
     font-family: 'Segoe UI', sans-serif;
     transition: transform 0.3s ease;
+    background-size: cover; 
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+.bg-mask{
+    filter: blur(0.2);
+    background-color: rgba(30, 30, 30, 0.6);
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    margin-top: 40px;
 }
 
 .onboarding-language-select {
@@ -421,7 +433,7 @@ html, body {
     left: 60px;
     height: calc(100% - 40px);
     width: calc(100% - 80px);
-    background: rgba(30, 30, 30, 0.95);
+    background: none;
     z-index: 1;
     margin: 25px;
     margin-left: 20px;

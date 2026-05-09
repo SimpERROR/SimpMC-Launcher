@@ -302,12 +302,14 @@
 </div><br>
 <div class="page-body">
     <div class="personalization-section">
+        <!-- 设置显示名称 -->
         <div class="setting-group">
             <label class="setting-label" data-i18n="settings.display_name">显示名称</label>
             <input type="text" class="setting-input" id="display-name-input" maxlength="20" onchange="saveDisplayName()">
             <p class="setting-hint" data-i18n="settings.display_name_desc">设置主页问候语中显示的名称</p>
         </div>
         
+        <!-- 背景音乐 -->
         <div class="setting-group">
             <label class="setting-label" data-i18n="settings.background_music">背景音乐</label>
             <div class="music-control">
@@ -332,6 +334,26 @@
             <p class="setting-hint" data-i18n="settings.music_hint">音乐文件应放置在 SimpMC/music 目录下</p>
         </div>
         
+        <!-- 背景图片 -->
+        <div class="setting-group">
+            <label class="setting-label" data-i18n="settings.bg_img"></label>
+            <div class="music-toggle" id="bg-toggle" onclick="toggleBg()"></div>
+            <div class="bg-mask-settings" id="bg-mask-settings">
+                <br>
+                <label class="setting-label" data-i18n="settings.bg_mask_brightness"></label>
+                <input type="range" class="volume-slider" id="brightness-slider" min="0.0" max="1.0" step="0.1" onchange="setBgBrightness(this.value)">
+                <label id="brightness-shown"></label>
+
+                <br><br>
+                <label class="setting-label" data-i18n="settings.bg_mask_blur"></label>
+                <input type="range" class="volume-slider" id="blur-slider" min="0" max="20" step="1" onchange="setBgBlur(this.value)">
+                <label id="blur-shown"></label>
+            </div>
+            <p class="setting-hint" data-i18n="settings.bg_img_hint"></p>
+        </div>
+
+        <br><br>
+
         <div id="save-status" class="save-status">
             <span id="save-message" class="save-message">设置已保存</span>
         </div>
