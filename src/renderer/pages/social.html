@@ -1,0 +1,289 @@
+<style>
+    .account_container{
+        min-height: 70px;
+        min-width: 300px;
+        border-radius: 15px;
+        background-color: #79797970;
+        backdrop-filter: blur(5px);
+        padding: 25px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .loading{
+        height: 40px;
+        filter: brightness(0) invert(1);
+        margin-left: auto;
+        margin-right: auto;
+        animation: spinning 0.5s infinite;
+    }
+
+    @keyframes spinning {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .user_avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: rgba(255,255,255,0.1);
+    }
+    .user_info {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .user_name {
+        font-size: 19px;
+        font-weight: bold;
+        color: white;
+    }
+    .user_status {
+        font-size: 14px;
+        color: rgba(255,255,255,0.6);
+    }
+    .user_status.online {
+        color: #4cd964;
+    }
+    .user_status.in_game {
+        color: #ffcc00;
+    }
+    .user_status.offline {
+        color: rgba(255,255,255,0.4);
+    }
+    .login_btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: none;
+        background: rgb(29, 115, 201);
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    .login_btn:hover {
+        background: rgb(25, 100, 180);
+    }
+    .logout_btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: none;
+        background: rgba(255,255,255,0.1);
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+        margin-left: auto;
+    }
+    .logout_btn:hover {
+        background: rgba(255, 89, 89, 0.2);
+    }
+    .settings_btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: none;
+        background: rgba(255,255,255,0.1);
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+        margin-right: auto;
+    }
+    .settings_btn:hover {
+        background: rgba(255,255,255,0.2);
+    }
+
+    .hint{
+        font-size: 10px;
+        color:rgb(200, 200, 200);
+        margin-left: 5px;
+    }
+
+    .friends_container {
+        margin-top: 20px;
+        background: #79797970;
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+    .friends_header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 15px;
+    }
+
+    .friends_title {
+        font-size: 16px;
+        font-weight: bold;
+        color: white;
+    }
+
+    .friends_btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: none;
+        background: rgb(29, 115, 201);
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .friends_btn:hover {
+        background: rgb(25, 100, 180);
+    }
+
+    .friend_badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 10px;
+        background: #ff3b30;
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+        margin-left: 8px;
+    }
+
+    .friend-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 12px;
+        padding: 5px;
+    }
+
+    .friend-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 16px 12px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .friend-item:hover {
+        transform: translateY(-3px);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+        border-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .friend_avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .friend_info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        text-align: center;
+    }
+
+    .friend_name {
+        font-size: 14px;
+        font-weight: bold;
+        color: white;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .friend_status {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .friend_status::before {
+        content: '';
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .friend_status.online::before {
+        background: #4cd964;
+        box-shadow: 0 0 6px #4cd964;
+    }
+
+    .friend_status.in_game::before {
+        background: #ffcc00;
+        box-shadow: 0 0 6px #ffcc00;
+    }
+
+    .friend_status.online {
+        color: #4cd964;
+    }
+
+    .friend_status.in_game {
+        color: #ffcc00;
+    }
+
+    .friends_more {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 10px;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 13px;
+    }
+
+    .friend_status.offline {
+        color: rgba(255, 255, 255, 0.4);
+    }
+
+    .empty_hint {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 14px;
+        padding: 20px;
+    }
+</style>
+
+<div class="page-header">
+    <h1 data-i18n="social.title"></h1>
+</div>
+
+<div class="page-body">
+    <div class="account_container" id="account_container">
+        <img class="loading" id="loading" src="../assets/icon/spinner-solid-full.svg" style="display: block;">
+        <img class="user_avatar" id="user_avatar" src="../assets/default_avatar.jpg" alt="avatar" style="display: none;">
+        <div class="user_info" id="user_info" style="display: none;">
+            <span class="user_name" id="user_name"></span>
+            <span class="user_status" id="user_status"></span>
+        </div>
+        <button class="login_btn" id="login_btn" onclick="switchPage('social/login')" style="display: none;">登录</button>
+        <button class="settings_btn" id="settings_btn" onclick="switchPage('social/account')" style="display: none;">账户设置</button>
+        <button class="logout_btn" id="logout_btn" onclick="logout()" style="display: none;">退出</button>
+    </div>
+    <p class="hint" data-i18n="social.account_hint"></p>
+
+    <div class="friends_container" id="friends_container" style="display: none;">
+        <div class="friends_header">
+            <div class="friends_title">
+                <span data-i18n="social.friends"></span>
+                <span class="friend_badge" id="friend_badge" style="display: none;">0</span>
+            </div>
+            <button class="friends_btn" id="friends_btn" onclick="switchPage('social/friends')" data-i18n="social.manage_friends"></button>
+        </div>
+        <img class="loading" id="friend_loading" src="../assets/icon/spinner-solid-full.svg" style="display: block;">
+        <div class="friend-list" id="friend_list"></div>
+        <div class="empty_hint" id="friend_empty" style="display: none;" data-i18n="social.no_friends"></div>
+    </div>
+</div>

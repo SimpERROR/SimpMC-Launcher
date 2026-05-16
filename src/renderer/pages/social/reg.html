@@ -1,0 +1,148 @@
+<style>
+    .register-container {
+        padding: 20px;
+        color: white;
+        font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    .input-group {
+        margin-bottom: 15px;
+    }
+
+    .input-group label {
+        display: block;
+        font-size: 13px;
+        margin-bottom: 8px;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .input-group input {
+        width: 100%;
+        padding: 12px;
+        border-radius: 8px;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        font-size: 14px;
+        box-sizing: border-box;
+        transition: all 0.3s ease;
+    }
+
+    .input-group input:focus {
+        outline: none;
+        border-color: rgb(29, 115, 201); 
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .captcha-container {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+        margin-bottom: 25px;
+    }
+
+    .chptcha {
+        color: white;
+        border-radius: 8px; 
+        border: none;
+        font-size: 14px;
+        width: 120px; 
+        height: 42px;
+        background-color: rgb(29, 115, 201);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .chptcha:hover {
+        background-color: rgb(20, 83, 146);
+        transform: translateY(-1px);
+    }
+
+    .chptcha:active {
+        transform: translateY(0);
+    }
+
+    /* 注册主按钮 */
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+        background-color: rgb(29, 115, 201);
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+    }
+
+    .btn-submit:hover {
+        background-color: #92ccff;
+        box-shadow: 0 4px 15px rgba(126, 187, 240, 0.3);
+    }
+
+    .captcha-token{
+        visibility: hidden;
+    }
+
+    .finished{
+        background-color:rgb(33, 129, 16);
+    }
+
+    .error{
+        background-color: #901212;
+    }
+
+    .back-link {
+        display: block;
+        text-align: center;
+        margin-top: 15px;
+        color: rgba(255, 255, 255, 0.6);
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .back-link:hover {
+        color: rgba(255, 255, 255, 0.9);
+    }
+</style>
+
+<div class="register-container">
+    <div class="page-header">
+        <h1 data-i18n="social.reg_title"></h1>
+    </div>
+
+    <div class="page-body">
+        <form id="regForm">
+            <div class="input-group">
+                <label data-i18n="social.username"></label>
+                <input type="text" id="username" required>
+            </div>
+
+            <div class="input-group">
+                <label data-i18n="social.password"></label>
+                <input type="password" id="password" required>
+            </div>
+
+            <div class="input-group">
+                <label data-i18n="social.captcha_label"></label>
+                <div class="captcha-container">
+                    <button type="button" class="chptcha" 
+                            onclick="window.simpmcAPI.openBrowser('https://simpmcapi.phsver.icu/turnstile-widget')" 
+                            data-i18n="social.captcha"
+                            id="captcha-button">
+                    </button>
+                    <input class="captcha-token" type="password" id="captcha-token" required disabled>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit" data-i18n="social.reg_button"></button>
+        </form>
+        <a class="back-link" onclick="switchPage('social/login')" data-i18n="social.go_to_login"></a>
+    </div>
+</div>

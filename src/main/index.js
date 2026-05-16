@@ -61,11 +61,53 @@ function createWindow() {
     mainWindow.webContents.openDevTools();
 }
 
+// Deep Links 注册
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  process.exit(0);
+}
+
+app.on('second-instance', (event, commandLine, workingDirectory) => {
+  const url = commandLine.find(arg => arg.startsWith('simpmc://'));
+  if (url && mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+    mainWindow.webContents.send('protocol-url', url);
+  }
+});
+
+app.on('open-url', (event, url) => {
+  event.preventDefault();
+  if (mainWindow) {
+    mainWindow.webContents.send('protocol-url', url);
+  }
+});
+
 app.whenReady().then(() => {
     initStore();
     createWindow();
-    
-    // 应用启动时扫描音乐与背景目录，如果没有则自动创建
+
+    const isDev = !app.isPackaged;
+    const protocolArgs = isDev ? [path.resolve(__dirname, 'index.js')] : [];
+    if (isDev){
+        console.log('检测到开发环境，已跳过自动注册协议，请确保手动注册表配置正确。');
+    } else {
+        const success = app.setAsDefaultProtocolClient('simpmc', process.execPath, protocolArgs);
+        console.log('Protocol registration:', success ? 'success' : 'failed');
+    }
+
+    const protocolArg = process.argv.find(arg => arg.startsWith('simpmc://'));
+    if (protocolArg && mainWindow) {
+        if (mainWindow.webContents.isLoading()) {
+            mainWindow.webContents.once('did-finish-load', () => {
+                mainWindow.webContents.send('protocol-url', protocolArg);
+            });
+        } else {
+            mainWindow.webContents.send('protocol-url', protocolArg);
+        }
+    }
+
     scanMusicDirectory();
     scanBackgroundDirectory();
 
@@ -74,17 +116,16 @@ app.whenReady().then(() => {
     });
 });
 
-// 添加 IPC 处理，让渲染进程请求播放音乐
+app.on('window-all-closed', function () {
+    if (process.platform !== 'darwin') app.quit();
+});
+
 ipcMain.handle('request_play_music', () => {
     if (store && store.get('musicEnabled', true)) {
         playNextTrack();
         return true;
     }
     return false;
-});
-
-app.on('window-all-closed', function () {
-    if (process.platform !== 'darwin') app.quit();
 });
 
 ipcMain.handle('get_user_locale', () => {
@@ -916,6 +957,51 @@ ipcMain.handle('get_minecraft_versions', async () => {
         console.error('Get versions error:', error);
         return { success: false, error: error.message };
     }
+});
+
+ipcMain.handle('send_heartbeat', async (event, status = 'online') => {
+    console.log('[主进程] send_heartbeat 被调用, status:', status);
+    if (!store) {
+        console.log('[主进程] store 未初始化');
+        return { success: false, error: 'Store not initialized' };
+    }
+    const token = store.get('authToken', null);
+    if (!token) {
+        return { success: false, error: 'Not logged in' };
+    }
+    try {
+        const response = await fetch('https://simpmcapi.phsver.icu/api/heartbeat', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status })
+        });
+        if (response.ok) {
+            console.log('[主进程] 心跳包发送成功');
+            return { success: true };
+        } else if (response.status === 401) {
+            return { success: false, error: 'Token expired' };
+        } else {
+            return { success: false, error: 'Failed to send heartbeat' };
+        }
+    } catch (error) {
+        console.log('[主进程] 心跳包请求错误:', error.message);
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('get_heartbeat_interval', async () => {
+    if (!store) return 90000;
+    return store.get('heartbeatInterval', 90000);
+});
+
+ipcMain.handle('set_heartbeat_interval', async (event, interval) => {
+    if (!store) return false;
+    store.set('heartbeatInterval', interval);
+    console.log('[主进程] 心跳间隔已设置为:', interval);
+    return true;
 });
 
 ipcMain.handle('get_version_details', async (event, versionId) => {
@@ -1818,5 +1904,358 @@ ipcMain.handle('getBgBlur', () => {
         return store.get('bg.blur_value');
     } catch(error) {
         return 0;
+    }
+});
+
+ipcMain.handle('openBrowser', (event, url) => {
+    require('electron').shell.openExternal(url);
+});
+
+ipcMain.handle('get_auth_token', () => {
+    if (!store) {
+        console.log('[主进程] get_auth_token: store 未初始化');
+        return null;
+    }
+    const token = store.get('authToken', null);
+    console.log('[主进程] get_auth_token:', token ? '存在' : '不存在');
+    return token;
+});
+
+ipcMain.handle('set_auth_token', (event, token) => {
+    console.log('[主进程] set_auth_token 被调用, token:', token ? '存在' : '不存在');
+    if (!store) {
+        console.log('[主进程] store 未初始化');
+        return false;
+    }
+    if (token) {
+        store.set('authToken', token);
+        console.log('[主进程] Token 已保存');
+    } else {
+        store.delete('authToken');
+        console.log('[主进程] Token 已删除');
+    }
+    return true;
+});
+
+ipcMain.handle('get_user_info', async () => {
+    console.log('[主进程] get_user_info 被调用');
+    if (!store) {
+        console.log('[主进程] store 未初始化');
+        return { success: false, error: 'Store not initialized' };
+    }
+    const token = store.get('authToken', null);
+    console.log('[主进程] 获取到的 token:', token ? '存在' : '不存在');
+    if (!token) {
+        return { success: false, error: 'Not logged in' };
+    }
+    try {
+        console.log('[主进程] 正在请求用户信息...');
+        const response = await fetch('https://simpmcapi.phsver.icu/api/user/info', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        console.log('[主进程] API 响应状态:', response.status);
+        if (response.ok) {
+            const data = await response.json();
+            console.log('[主进程] 用户信息:', data);
+            return { success: true, data };
+        } else if (response.status === 401) {
+            store.delete('authToken');
+            return { success: false, error: 'Token expired' };
+        } else {
+            return { success: false, error: 'Failed to get user info' };
+        }
+    } catch (error) {
+        console.log('[主进程] 请求错误:', error.message);
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('set_qq', async (event, qq) => {
+    if (!store) return { success: false, error: 'Store not initialized' };
+    const token = store.get('authToken', null);
+    if (!token) {
+        return { success: false, error: 'Not logged in' };
+    }
+    try {
+        const response = await fetch('https://simpmcapi.phsver.icu/api/user/qq', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ qq })
+        });
+        if (response.ok) {
+            return { success: true, message: 'QQ updated' };
+        } else if (response.status === 401) {
+            store.delete('authToken');
+            return { success: false, error: 'Token expired' };
+        } else {
+            const data = await response.json();
+            return { success: false, error: data.error || 'Failed to update QQ' };
+        }
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('get_friends', async () => {
+    if (!store) return { success: false, error: 'Store not initialized' };
+    const token = store.get('authToken', null);
+    if (!token) {
+        return { success: false, error: 'Not logged in' };
+    }
+    try {
+        const response = await fetch('https://simpmcapi.phsver.icu/api/friends', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (response.ok) {
+            const data = await response.json();
+            return { success: true, data };
+        } else if (response.status === 401) {
+            store.delete('authToken');
+            return { success: false, error: 'Token expired' };
+        } else {
+            return { success: false, error: 'Failed to get friends' };
+        }
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('get_friend_requests', async () => {
+    if (!store) return { success: false, error: 'Store not initialized' };
+    const token = store.get('authToken', null);
+    if (!token) {
+        return { success: false, error: 'Not logged in' };
+    }
+    try {
+        const response = await fetch('https://simpmcapi.phsver.icu/api/friends/requests', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (response.ok) {
+            const data = await response.json();
+            return { success: true, data };
+        } else if (response.status === 401) {
+            store.delete('authToken');
+            return { success: false, error: 'Token expired' };
+        } else {
+            return { success: false, error: 'Failed to get friend requests' };
+        }
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('get_active_requests', async () => {
+    if (!store) return { success: false, error: 'Store not initialized' };
+    const token = store.get('authToken', null);
+    if (!token) {
+        return { success: false, error: 'Not logged in' };
+    }
+    try {
+        const response = await fetch('https://simpmcapi.phsver.icu/api/friends/active-requests', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (response.ok) {
+            const data = await response.json();
+            return { success: true, data };
+        } else if (response.status === 401) {
+            store.delete('authToken');
+            return { success: false, error: 'Token expired' };
+        } else {
+            return { success: false, error: 'Failed to get active requests' };
+        }
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('get_active_requests_count', async () => {
+    if (!store) return { success: false, error: 'Store not initialized' };
+    const token = store.get('authToken', null);
+    if (!token) {
+        return { success: false, error: 'Not logged in' };
+    }
+    try {
+        const response = await fetch('https://simpmcapi.phsver.icu/api/friends/active-requests/count', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (response.ok) {
+            const data = await response.json();
+            return { success: true, count: data.count };
+        } else if (response.status === 401) {
+            store.delete('authToken');
+            return { success: false, error: 'Token expired' };
+        } else {
+            return { success: false, error: 'Failed to get count' };
+        }
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('send_friend_request', async (event, username) => {
+    console.log('[主进程] send_friend_request 被调用，username:', username);
+    if (!store) return { success: false, error: 'Store not initialized' };
+    const token = store.get('authToken', null);
+    if (!token) {
+        return { success: false, error: 'Not logged in' };
+    }
+    try {
+        const response = await fetch('https://simpmcapi.phsver.icu/api/friends/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ username })
+        });
+        console.log('[主进程] API 响应状态:', response.status);
+        if (response.ok) {
+            return { success: true, message: 'Friend request sent' };
+        } else if (response.status === 401) {
+            store.delete('authToken');
+            return { success: false, error: 'Token expired' };
+        } else if (response.status === 400) {
+            return { success: false, error: 'Cannot add yourself' };
+        } else if (response.status === 404) {
+            return { success: false, error: 'User not found' };
+        } else if (response.status === 409) {
+            return { success: false, error: 'Already friends or request pending' };
+        } else {
+            return { success: false, error: 'Failed to send friend request' };
+        }
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('accept_friend_request', async (event, requestId) => {
+    if (!store) return { success: false, error: 'Store not initialized' };
+    const token = store.get('authToken', null);
+    if (!token) {
+        return { success: false, error: 'Not logged in' };
+    }
+    try {
+        const response = await fetch('https://simpmcapi.phsver.icu/api/friends/accept', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ request_id: requestId })
+        });
+        if (response.ok) {
+            return { success: true, message: 'Friend request accepted' };
+        } else if (response.status === 401) {
+            store.delete('authToken');
+            return { success: false, error: 'Token expired' };
+        } else {
+            return { success: false, error: 'Failed to accept friend request' };
+        }
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('reject_friend_request', async (event, requestId) => {
+    if (!store) return { success: false, error: 'Store not initialized' };
+    const token = store.get('authToken', null);
+    if (!token) {
+        return { success: false, error: 'Not logged in' };
+    }
+    try {
+        const response = await fetch('https://simpmcapi.phsver.icu/api/friends/reject', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ request_id: requestId })
+        });
+        if (response.ok) {
+            return { success: true, message: 'Friend request rejected' };
+        } else if (response.status === 401) {
+            store.delete('authToken');
+            return { success: false, error: 'Token expired' };
+        } else {
+            return { success: false, error: 'Failed to reject friend request' };
+        }
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('remove_friend', async (event, friendId) => {
+    if (!store) return { success: false, error: 'Store not initialized' };
+    const token = store.get('authToken', null);
+    if (!token) {
+        return { success: false, error: 'Not logged in' };
+    }
+    try {
+        const response = await fetch('https://simpmcapi.phsver.icu/api/friends/remove', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ friend_id: friendId })
+        });
+        if (response.ok) {
+            return { success: true, message: 'Friend removed' };
+        } else if (response.status === 401) {
+            store.delete('authToken');
+            return { success: false, error: 'Token expired' };
+        } else {
+            return { success: false, error: 'Failed to remove friend' };
+        }
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('delete_account', async (event, password) => {
+    if (!store) return { success: false, error: 'Store not initialized' };
+    const token = store.get('authToken', null);
+    if (!token) {
+        return { success: false, error: 'Not logged in' };
+    }
+    try {
+        const response = await fetch('https://simpmcapi.phsver.icu/api/user/delete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ password })
+        });
+        if (response.ok) {
+            store.delete('authToken');
+            return { success: true, message: 'Account deleted' };
+        } else if (response.status === 401) {
+            store.delete('authToken');
+            return { success: false, error: 'Password incorrect' };
+        } else {
+            const data = await response.json();
+            return { success: false, error: data.error || 'Failed to delete account' };
+        }
+    } catch (error) {
+        return { success: false, error: error.message };
     }
 });

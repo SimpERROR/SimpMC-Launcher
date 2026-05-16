@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .content_container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            
+            border-radius: 24px;
+            width: 90%;
+            max-width: 400px;
+            padding: 40px 20px;
+            
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        h2 {
+            color: #4da3ff;
+            font-size: 28px;
+            margin-bottom: 25px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 15px rgba(77, 163, 255, 0.3);
+        }
+
+        .content_container img {
+            width: 180px;
+            height: auto;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .back-btn {
+            margin-top: 30px;
+            padding: 10px 30px;
+            background: #2d8cf0;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #5cadff;
+            box-shadow: 0 0 15px rgba(45, 140, 240, 0.4);
+        }
+
+        .tip{
+            color: #4da3ff;
+            font-size: 15px;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-body">
+    <div class="content_container">
+        <h2 data-i18n="social.reg_success">注册成功！</h2>
+        <p class="tip" data-i18n="social.reg_tip"></p>
+        <img src="../assets/Shin/congratulation.png" alt="Success">
+        <br>
+        <button class="back-btn" onclick="switchPage('social')" data-i18n="social.back"></button>
+    </div>
+</div>
+
+</body>
+</html>

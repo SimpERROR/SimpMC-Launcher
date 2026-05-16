@@ -1,0 +1,477 @@
+<style>
+    .friends-page {
+        padding: 20px;
+        color: white;
+        font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    .loading{
+        height: 40px;
+        filter: brightness(0) invert(1);
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        animation: spinning 0.5s infinite;
+    }
+
+    @keyframes spinning {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .section {
+        background: #79797970;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 10px;
+        background: #ff3b30;
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .request-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+
+    .request-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .request-info {
+        flex: 1;
+    }
+
+    .request-name {
+        font-size: 14px;
+        font-weight: bold;
+        color: white;
+    }
+
+    .request-time {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.5);
+        margin-top: 2px;
+        margin-left: 5px;
+    }
+
+    .request-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-accept {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: none;
+        background: #4cd964;
+        color: white;
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+    .btn-accept:hover {
+        background: #3db855;
+    }
+
+    .btn-reject {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: none;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+    .btn-reject:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .result-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+
+    .result-item.accepted {
+        border-left: 3px solid #4cd964;
+    }
+
+    .result-item.rejected {
+        border-left: 3px solid #ff3b30;
+    }
+
+    .friend-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+
+    .friend-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .friend-info {
+        flex: 1;
+    }
+
+    .friend-name {
+        font-size: 14px;
+        font-weight: bold;
+        color: white;
+    }
+
+    .friend-status {
+        font-size: 12px;
+        margin-top: 2px;
+    }
+
+    .friend-status.online {
+        color: #4cd964;
+    }
+
+    .friend-status.in_game {
+        color: #ffcc00;
+    }
+
+    .friend-status.offline {
+        color: rgba(255, 255, 255, 0.4);
+    }
+
+    .btn-remove {
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: none;
+        background: rgba(255, 59, 48, 0.2);
+        color: #ff3b30;
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+    .btn-remove:hover {
+        background: rgba(255, 59, 48, 0.3);
+    }
+
+    .add-friend-form {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .add-friend-input {
+        flex: 1;
+        padding: 12px;
+        border-radius: 8px;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        font-size: 14px;
+    }
+
+    .add-friend-input:focus {
+        outline: none;
+        border-color: rgb(29, 115, 201);
+    }
+
+    .add-friend-btn {
+        padding: 12px 20px;
+        border-radius: 8px;
+        border: none;
+        background: rgb(29, 115, 201);
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .add-friend-btn:hover {
+        background: rgb(25, 100, 180);
+    }
+
+    .add-friend-btn:disabled {
+        background: rgba(255, 255, 255, 0.2);
+        cursor: not-allowed;
+    }
+
+    .empty-state {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 14px;
+        padding: 20px;
+    }
+
+    .tabs {
+        display: flex;
+        gap: 5px;
+        margin-bottom: 15px;
+    }
+
+    .tab {
+        padding: 10px 16px;
+        border-radius: 8px;
+        border: none;
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.6);
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .tab.active {
+        background: rgb(29, 115, 201);
+        color: white;
+    }
+
+    .tab:hover:not(.active) {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .tab-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        border-radius: 9px;
+        background: #ff3b30;
+        color: white;
+        font-size: 11px;
+        font-weight: bold;
+        margin-left: 6px;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .back-link {
+        display: block;
+        text-align: center;
+        margin-top: 15px;
+        color: rgba(255, 255, 255, 0.6);
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .back-link:hover {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .status-message {
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        text-align: center;
+        font-size: 14px;
+        display: none;
+        backdrop-filter: blur(2px);
+    }
+
+    .status-message.success {
+        background-color: rgba(33, 129, 16, 0.4);
+        color: #4cd964;
+        display: block;
+    }
+
+    .status-message.error {
+        background-color: rgba(255, 59, 48, 0.4);
+        color: #ff3b30;
+        display: block;
+    }
+
+    .tip{
+        font-size: 15px;
+        color: #63acf1;
+        margin-left: 5px;
+    }
+
+    .friend-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: all 0.2s ease;
+    }
+
+    .friend-item:hover {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.05) 100%);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .friend-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        flex-shrink: 0;
+    }
+
+    .friend-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .friend-name {
+        font-size: 15px;
+        font-weight: bold;
+        color: white;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .friend-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .friend-status::before {
+        content: '';
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        flex-shrink: 0;
+    }
+
+    .friend-status.online::before {
+        background: #4cd964;
+        box-shadow: 0 0 6px #4cd964;
+    }
+
+    .friend-status.in_game::before {
+        background: #ffcc00;
+        box-shadow: 0 0 6px #ffcc00;
+    }
+
+    .btn-remove {
+        padding: 6px 14px;
+        border: none;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: rgba(255, 59, 48, 0.2);
+        color: #ff3b30;
+        flex-shrink: 0;
+    }
+
+    .btn-remove:hover {
+        background: rgba(255, 59, 48, 0.4);
+    }
+</style>
+
+<div class="friends-page">
+    <div class="page-header">
+        <h1 data-i18n="social.friends_title"></h1>
+    </div>
+
+    <div class="page-body">
+        <div class="section">
+            <div class="section-title" data-i18n="social.add_friend"></div>
+            <div class="status-message" id="add_status"></div>
+            <form class="add-friend-form" id="addFriendForm">
+                <input type="text" class="add-friend-input" id="friend_username" placeholder="输入用户名" required>
+                <button type="submit" class="add-friend-btn" data-i18n="social.send_request"></button>
+            </form>
+        </div>
+
+        <div class="section">
+            <div class="tabs">
+                <button class="tab active" data-tab="requests">
+                    <span class="tab-badge" id="tab-badge-requests" style="display: none;"></span>
+                    <span data-i18n="social.received_requests">收到的申请</span>
+                </button>
+                <button class="tab" data-tab="sent">
+                    <span class="tab-badge" id="tab-badge-sent" style="display: none;"></span>
+                    <span data-i18n="social.sent_requests">发出的申请</span>
+                </button>
+                <button class="tab" data-tab="results">
+                    <span class="tab-badge" id="tab-badge-results" style="display: none;"></span>
+                    <span data-i18n="social.request_results">申请结果</span>
+                </button>
+                <button class="tab" data-tab="friends">
+                    <!-- <span class="tab-badge" id="tab-badge-friends" style="display: none;"></span> -->
+                    <span data-i18n="social.friends">好友</span>
+                </button>
+            </div>
+
+            <div class="tab-content active" id="tab-requests">
+                <img class="loading" id="friends_loading" src="../assets/icon/spinner-solid-full.svg" style="display: block;">
+                <div id="received_requests_list" style="display: none;"></div>
+                <div class="empty-state" id="received_empty" style="display: none;" data-i18n="social.no_received_requests"></div>
+            </div>
+
+            <div class="tab-content" id="tab-sent">
+                <div id="sent_requests_list"></div>
+                <div class="empty-state" id="sent_empty" style="display: none;" data-i18n="social.no_sent_requests"></div>
+            </div>
+
+            <div class="tab-content" id="tab-results">
+                <div id="results_list"></div>
+                <p class="tip" data-i18n="social.request_result_tip"></p>
+                <div class="empty-state" id="results_empty" style="display: none;" data-i18n="social.no_results"></div>
+            </div>
+
+            <div class="tab-content" id="tab-friends">
+                <div id="friends_list"></div>
+                <div class="empty-state" id="friends_empty" style="display: none;" data-i18n="social.no_friends"></div>
+            </div>
+        </div>
+
+        <a class="back-link" onclick="switchPage('social')" data-i18n="social.back"></a>
+    </div>
+</div>

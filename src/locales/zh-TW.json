@@ -318,7 +318,11 @@
         "oss_thank": "非常感謝以下的開源項目！沒有它們，就不會有 SimpMC Launcher。",
         "license": "開源協議",
         "not_official_product": "SimpMC Launcher 不是 Minecraft 的官方產品。其並不隸屬於 Mojang 或 Microsoft。其未經 Mojang 與 Microsoft 批准，亦不與二者相關聯。",
-        "license_desc": "本項目基於 Apache-2.0 協議開源，詳情請查看項目倉庫中的 LICENSE 檔案。"
+        "license_desc": "本項目基於 Apache-2.0 協議開源，詳情請查看項目倉庫中的 LICENSE 檔案。",
+        "localization": "本地化",
+        "zh-CN": "简体中文",
+        "zh-TW": "繁體中文",
+        "en-US": "英語"
     },
     "update": {
         "title": "新版本可用！",

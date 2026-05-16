@@ -13,6 +13,7 @@
     <script src="js/update_checker.js"></script>
     <script src="js/bg_changer.js"></script>
     <script src="js/personalization.js"></script>
+    <script src="js/acc_reg.js"></script>
 
     <!-- 引用 css 样式 -->
     <link rel="stylesheet" href="style.css">
@@ -49,7 +50,7 @@
                             </div>
                             <div class="language-card" data-value="zh-TW">
                                 <div class="language-flag">🇨🇳</div>
-                                <div class="language-name">中文<br>（繁体）</div>
+                                <div class="language-name">中文<br>（繁體）</div>
                                 <div class="language-check"><input type="radio" name="language" value="zh-TW" class="hidden-input"></div>
                             </div>
                             <div class="language-card" data-value="en-US">
@@ -145,6 +146,10 @@
             <img src="../assets/icon/shirt-solid-full.svg" alt="Wardrobe" class="menu-icon" data-page="wardrobe" onclick="switchPage('wardrobe')">
             <img src="../assets/icon/compass-solid-full.svg" alt="Discovery" class="menu-icon" data-page="discovery" onclick="switchPage('discovery')">
             <img src="../assets/icon/download-solid-full.svg" alt="Download" class="menu-icon" data-page="download" onclick="switchPage('download')">
+            <div class="menu-icon-wrapper" data-page="social" onclick="switchPage('social')">
+                <img src="../assets/icon/user-group-solid-full.svg" alt="Social" class="menu-icon">
+                <span class="menu-badge" id="social_badge" style="display: none;"></span>
+            </div>
             <img src="../assets/icon/gear-solid-full.svg" alt="Settings" class="menu-icon" data-page="settings" onclick="switchPage('settings')">
         </div>
 

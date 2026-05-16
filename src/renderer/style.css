@@ -427,6 +427,29 @@ html, body {
     opacity: 1;
 }
 
+.menu-container .menu-icon-wrapper {
+    position: relative;
+    cursor: pointer;
+}
+
+.menu-container .menu-badge {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 8px;
+    background: #ff3b30;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
 .page-content {
     position: absolute;
     top: 40px;

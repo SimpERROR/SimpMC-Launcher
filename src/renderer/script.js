@@ -4,6 +4,44 @@ let createdCharacterData = null;
 let cachedProfiles = [];
 let currentPage = 'home';
 let skinview3dLoaded = false;
+let heartbeatTimer = null;
+
+async function sendHeartbeat() {
+    try {
+        const result = await window.simpmcAPI.sendHeartbeat('online');
+        if (result.success) {
+            console.log('[心跳] 心跳包发送成功');
+        } else if (result.error === 'Not logged in') {
+            console.log('[心跳] 未登录，停止心跳');
+            stopHeartbeatTimer();
+        }
+    } catch (error) {
+        console.log('[心跳] 发送失败:', error.message);
+    }
+}
+
+function startHeartbeatTimer(intervalMs = 90000) {
+    stopHeartbeatTimer();
+    console.log('[心跳] 启动心跳定时器，间隔:', intervalMs, 'ms');
+    sendHeartbeat();
+    heartbeatTimer = setInterval(sendHeartbeat, intervalMs);
+}
+
+function stopHeartbeatTimer() {
+    if (heartbeatTimer) {
+        clearInterval(heartbeatTimer);
+        heartbeatTimer = null;
+        console.log('[心跳] 心跳定时器已停止');
+    }
+}
+
+async function restartHeartbeatTimer() {
+    if (heartbeatTimer) {
+        const interval = await window.simpmcAPI.getHeartbeatInterval();
+        startHeartbeatTimer(interval);
+        console.log('[心跳] 心跳定时器已重启，新间隔:', interval, 'ms');
+    }
+}
 
 function openExternal(url) {
     if (window.simpmcAPI && window.simpmcAPI.openExternal) {
@@ -277,12 +315,10 @@ async function initApp() {
         
         if (data && data.filePath) {
             const songName = data.filePath.split(/[\\/]/).pop();
-            // 去除文件扩展名
             const songNameWithoutExt = songName.replace(/\.[^/.]+$/, "");
             console.log('[Music] Song name:', songNameWithoutExt);
             showSongIndicator(songNameWithoutExt, data.total || 0);
             
-            // 传递 totalSongs 参数给 playAudioFile
             playAudioFile(data.filePath, data.total);
         }
     });
@@ -297,6 +333,17 @@ async function initApp() {
             await window.simpmcAPI.requestPlayMusic();
         }
     }, 500);
+
+            
+    const token = await window.simpmcAPI.getAuthToken();
+    if (token) {
+        const countResult = await window.simpmcAPI.getActiveRequestsCount();
+        if (countResult.success && typeof updateSocialBadge === 'function') {
+            updateSocialBadge(countResult.count);
+        }
+        const interval = await window.simpmcAPI.getHeartbeatInterval();
+        startHeartbeatTimer(interval);
+    }
 }
 
 // 音乐播放器
@@ -497,7 +544,8 @@ async function switchPage(pageName) {
     const menuIcons = document.querySelectorAll('.menu-icon');
     menuIcons.forEach(icon => {
         icon.classList.remove('active');
-        if (icon.dataset.page === pageName) {
+        const page = icon.dataset.page || icon.parentElement?.dataset.page;
+        if (page === pageName) {
             icon.classList.add('active');
         }
     });
@@ -510,8 +558,8 @@ async function switchPage(pageName) {
     }
     
     try {
-        if (!pageCache[pageName]) {
-            const response = await fetch(`pages/${pageName}.html`);
+        if (!pageCache[pageName] || pageName === 'social/friends') {
+            const response = await fetch(`pages/${pageName}.html?t=${Date.now()}`);
             if (!response.ok) {
                 throw new Error(`Failed to load ${pageName} page`);
             }
@@ -550,6 +598,7 @@ async function switchPage(pageName) {
                 dynamicStyle.textContent = cssContent;
                 document.head.appendChild(dynamicStyle);
             }
+            styleTag.remove();
         }
         
         pageContent.innerHTML = tempDiv.innerHTML;
@@ -587,6 +636,16 @@ async function switchPage(pageName) {
             loadWidgetsPage();
         } else if (pageName === 'about') {
             loadAboutPage();
+        } else if (pageName === 'social/reg'){
+            initRegForm();
+        } else if(pageName === 'social'){
+            initSocial();
+        } else if (pageName === 'social/login'){
+            initLoginForm();
+        } else if (pageName === 'social/account'){
+            initAccountPage();
+        } else if (pageName === 'social/friends'){
+            initFriendsPage();
         }
     } catch (error) {
         console.error('Error loading page:', error);
@@ -879,6 +938,41 @@ function openProfileManagement() {
 
 function openLanguageSelection() {
     switchPage('language-settings');
+}
+
+async function openHeartbeatSettings() {
+    const modal = document.getElementById('heartbeatModal');
+    const input = document.getElementById('heartbeatIntervalInput');
+    if (!modal || !input) return;
+    
+    const interval = await window.simpmcAPI.getHeartbeatInterval();
+    input.value = Math.round(interval / 1000);
+    modal.classList.remove('hidden');
+}
+
+function closeHeartbeatSettings() {
+    const modal = document.getElementById('heartbeatModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+async function saveHeartbeatSettings() {
+    const input = document.getElementById('heartbeatIntervalInput');
+    if (!input) return;
+    
+    let seconds = parseInt(input.value);
+    if (isNaN(seconds) || seconds < 30) seconds = 30;
+    if (seconds > 600) seconds = 600;
+    
+    const intervalMs = seconds * 1000;
+    await window.simpmcAPI.setHeartbeatInterval(intervalMs);
+    
+    if (typeof restartHeartbeatTimer === 'function') {
+        restartHeartbeatTimer();
+    }
+    
+    closeHeartbeatSettings();
 }
 
 async function loadProfiles() {

@@ -318,7 +318,11 @@
         "oss_thank": "Special thanks to the following open-source projects! SimpMC wouldn't exist without them.",
         "license": "License",
         "not_official_product": "SimpMC Launcher is NOT an official Minecraft product. Not approved by or associated with Mojang or Microsoft.",
-        "license_desc": "Licensed under Apache-2.0. See LICENSE for details."
+        "license_desc": "Licensed under Apache-2.0. See LICENSE for details.",
+        "localization": "Localization",
+        "zh-CN": "Simplified Chinese",
+        "zh-TW": "Traditional Chinese",
+        "en-US": "English"
     },
     "update": {
         "title": "New Version Available!",
