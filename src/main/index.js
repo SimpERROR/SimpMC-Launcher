@@ -58,7 +58,12 @@ function createWindow() {
     });
 
     mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
-    mainWindow.webContents.openDevTools();
+
+    const isDev = !app.isPackaged;
+
+    if(isDev){
+        mainWindow.webContents.openDevTools();
+    }
 }
 
 let floatingNotifications = [];

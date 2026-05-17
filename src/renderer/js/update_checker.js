@@ -1,9 +1,9 @@
-const LOCAL_VERSION = 'V0.1.0-dev';
+const LOCAL_VERSION = 'V0.1.0-preview';
 const CHECK_VERSION_URL = 'https://raw.githubusercontent.com/SimpERROR/SimpMC-Launcher/refs/heads/main/SimpMC_Assets/version.json';
 const GITHUB_RELEASE_URL = 'https://github.com/SimpERROR/SimpMC-Launcher';
 
 function isSnapshotOrDevVersion(version) {
-    return /snapshot|dev|development|alpha|beta/i.test(version);
+    return /snapshot|dev|development|alpha|beta|preview/i.test(version);
 }
 
 function normalizeVersion(version) {
