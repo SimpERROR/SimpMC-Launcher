@@ -398,6 +398,11 @@
         "test_notification_body": "This is a test notification from SimpMC.",
         "test_notification_sent": "Test notification sent",
         "test_notification_failed": "Failed to send test notification",
-        "request_result_tip": "You can only view the result of each request here once; it will not be displayed again afterward."
+        "request_result_tip": "You can only view the result of each request here once; it will not be displayed again afterward.",
+        "login_success": "Login successful!",
+        "welcome_back": "Welcome back, ",
+        "logout": "Log Out",
+        "logout_successfully": "Logged out successfully.",
+        "successful": "Operation successful"
     }
 }
