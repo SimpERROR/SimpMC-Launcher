@@ -1,4 +1,6 @@
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 function updateSocialBadge(count) {
     const badge = document.getElementById('social_badge');
@@ -17,6 +19,128 @@ function getQQAvatarUrl(qq) {
     return `https://q.qlogo.cn/headimg_dl?dst_uin=${qq}&src_uin=${qq}&spec=100&feed=100`;
 }
 
+var socialStatusUpdateTimer = null;
+var socialFriendStatusSnapshot = {};
+var pendingCaptchaToken = null;
+
+function isStatusOnline(status) {
+    return status !== 'offline';
+}
+
+function createSocialStatusToast(message, type = 'info') {
+    // Prefer custom floating notification when available (Steam-like popup)
+    try {
+        if (window.simpmcAPI && typeof window.simpmcAPI.showFloatingNotification === 'function') {
+            window.simpmcAPI.showFloatingNotification(i18n('social.title') || 'SimpMC', message);
+            return;
+        }
+    } catch (e) {
+        console.warn('调用浮窗通知失败，回退到应用内提示', e);
+    }
+
+    // Fallback: in-app bottom-right toast
+    const container = document.getElementById('social_notification_container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `social-toast ${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => {
+        toast.classList.remove('show');
+        toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+    }, 4000);
+}
+
+async function refreshSocialStatusData() {
+    try {
+        const userResult = await window.simpmcAPI.getUserInfo();
+        const userStatus = document.getElementById('user_status');
+
+        if (userResult.success && userStatus) {
+            userStatus.className = 'user_status ' + userResult.data.status;
+            userStatus.textContent = userResult.data.status === 'online' ? i18n('social.status_online') :
+                                     userResult.data.status === 'in_game' ? i18n('social.status_in_game') : i18n('social.status_offline');
+        }
+
+        const friendsResult = await window.simpmcAPI.getFriends();
+        if (friendsResult.success && Array.isArray(friendsResult.data)) {
+            if (window.currentPage === 'social/friends' && typeof loadAllFriendData === 'function') {
+                await loadAllFriendData();
+            } else {
+                const friendList = document.getElementById('friend_list');
+                const friendEmpty = document.getElementById('friend_empty');
+                if (friendList) {
+                    friendList.innerHTML = '';
+                    const previewFriends = friendsResult.data.slice(0, 5);
+                    previewFriends.forEach(friend => {
+                        const item = document.createElement('div');
+                        item.className = 'friend-item';
+                        item.innerHTML = `
+                            <img class="friend_avatar" src="${getQQAvatarUrl(friend.qq)}" alt="avatar">
+                            <div class="friend_info">
+                                <span class="friend_name">${friend.username}</span>
+                                <span class="friend_status ${friend.status}">${friend.status === 'online' ? i18n('social.status_online') : friend.status === 'in_game' ? i18n('social.status_in_game') : i18n('social.status_offline')}</span>
+                            </div>
+                        `;
+                        friendList.appendChild(item);
+                    });
+                    if (friendsResult.data.length > 5) {
+                        const more = document.createElement('div');
+                        more.className = 'friends_more';
+                        more.textContent = i18n('social.more_friends').replace('{count}', String(friendsResult.data.length - 5));
+                        friendList.appendChild(more);
+                    }
+                    if (friendEmpty) {
+                        friendEmpty.style.display = friendsResult.data.length === 0 ? 'block' : 'none';
+                    }
+                }
+            }
+
+            friendsResult.data.forEach(friend => {
+                const key = friend.id || friend.username;
+                const wasOnline = socialFriendStatusSnapshot[key];
+                const nowOnline = isStatusOnline(friend.status);
+
+                if (typeof wasOnline !== 'undefined' && wasOnline !== nowOnline) {
+                    const template = nowOnline ? i18n('social.friend_online') : i18n('social.friend_offline');
+                    createSocialStatusToast(template.replace('{name}', friend.username), nowOnline ? 'success' : 'warning');
+                }
+
+                socialFriendStatusSnapshot[key] = nowOnline;
+            });
+        }
+    } catch (error) {
+        console.error('刷新社交状态失败:', error);
+    }
+}
+
+async function startSocialStatusTimer() {
+    stopSocialStatusTimer();
+    let intervalMs = 30000;
+    try {
+        const configured = await window.simpmcAPI.getHeartbeatInterval();
+        if (typeof configured === 'number' && configured > 0) {
+            intervalMs = Math.max(30000, configured);
+        }
+    } catch (error) {
+        console.warn('无法读取心跳间隔，使用默认状态刷新间隔 30000ms', error);
+    }
+
+    await refreshSocialStatusData();
+    socialStatusUpdateTimer = setInterval(refreshSocialStatusData, intervalMs);
+}
+
+function stopSocialStatusTimer() {
+    if (socialStatusUpdateTimer) {
+        clearInterval(socialStatusUpdateTimer);
+        socialStatusUpdateTimer = null;
+    }
+    socialFriendStatusSnapshot = {};
+}
+
 async function hashPassword(password) {
     const encoder = new TextEncoder();
     const data = encoder.encode(password);
@@ -24,6 +148,9 @@ async function hashPassword(password) {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
+
+window.stopSocialStatusTimer = stopSocialStatusTimer;
+window.startSocialStatusTimer = startSocialStatusTimer;
 
 window.simpmcAPI.onProtocolUrl((url) => {
     try {
@@ -33,30 +160,72 @@ window.simpmcAPI.onProtocolUrl((url) => {
                             urlObj.pathname.includes('turnstile-callback');
 
         if (isTurnstile) {
-            const token = urlObj.searchParams.get('token');
+            const token = urlObj.searchParams.get('token') || urlObj.searchParams.get('turnstile_token') || urlObj.searchParams.get('captcha_token');
+            pendingCaptchaToken = token || pendingCaptchaToken;
+
             const token_input = document.getElementById('captcha-token');
             const captcha_button = document.getElementById('captcha-button');
 
-            token_input.value = token;
-            captcha_button.disabled = 'disabled';
-            captcha_button.classList.add('finished');
-            captcha_button.innerText = i18n('social.finished');
+            if (token_input && token) {
+                token_input.value = token;
+                token_input.disabled = false;
+            }
 
-            console.log('成功得到人机验证 token 并保存至表单');
+            if (captcha_button && token) {
+                captcha_button.disabled = false;
+                captcha_button.classList.add('finished');
+                captcha_button.innerText = i18n('social.finished');
+            }
+
+            if (token) {
+                console.log('成功得到人机验证 token 并保存至表单');
+            } else {
+                console.warn('Deep link 返回的 URL 缺少 token 参数', url);
+            }
         }
     } catch (err) {
-        console.error('解析链接失败');
+        console.error('解析链接失败', err);
     }
 });
 
+window.testSystemNotification = async function() {
+    try {
+        const title = i18n('social.title') || 'SimpMC';
+        const body = i18n('social.test_notification_body') || 'This is a test notification from SimpMC.';
+        if (window.simpmcAPI && typeof window.simpmcAPI.showFloatingNotification === 'function') {
+            const res = await window.simpmcAPI.showFloatingNotification(title, body);
+            console.log('showFloatingNotification result:', res);
+        } else {
+            console.warn('showFloatingNotification 未暴露，使用回退');
+            createSocialStatusToast(body, 'info');
+        }
+        createSocialStatusToast(i18n('social.test_notification_sent') || '测试通知已发送', 'success');
+    } catch (error) {
+        console.error('测试通知失败:', error);
+        createSocialStatusToast(i18n('social.test_notification_failed') || '测试通知发送失败', 'warning');
+    }
+}
+
 async function initRegForm() {
     console.log('初始化注册表单')
+    const captchaTokenInput = document.getElementById('captcha-token');
+    const captchaButton = document.getElementById('captcha-button');
+    if (pendingCaptchaToken && captchaTokenInput) {
+        captchaTokenInput.value = pendingCaptchaToken;
+        captchaTokenInput.disabled = false;
+        if (captchaButton) {
+            captchaButton.disabled = false;
+            captchaButton.classList.add('finished');
+            captchaButton.innerText = i18n('social.finished');
+        }
+    }
+
     document.getElementById('regForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
-        const captchaToken = document.getElementById('captcha-token').value;
+        const captchaToken = captchaTokenInput ? captchaTokenInput.value : '';
         const submitBtn = e.target.querySelector('.btn-submit');
         const captcha_button = document.getElementById('captcha-button');
 
@@ -101,7 +270,10 @@ async function initRegForm() {
                 captcha_button.disabled = false;
                 captcha_button.classList.remove('finished');
                 captcha_button.innerText = i18n('social.captcha');
-                captchaToken.value = '';
+                if (captchaTokenInput) {
+                    captchaTokenInput.value = '';
+                }
+                pendingCaptchaToken = null;
                 await sleep(4000);
                 submitBtn.innerText = i18n('social.reg_button');
                 submitBtn.classList.remove('error');
@@ -129,12 +301,24 @@ async function initRegForm() {
 
 async function initLoginForm() {
     console.log('初始化登录表单');
+    const captchaTokenInput = document.getElementById('captcha-token');
+    const captchaButton = document.getElementById('captcha-button');
+    if (pendingCaptchaToken && captchaTokenInput) {
+        captchaTokenInput.value = pendingCaptchaToken;
+        captchaTokenInput.disabled = false;
+        if (captchaButton) {
+            captchaButton.disabled = false;
+            captchaButton.classList.add('finished');
+            captchaButton.innerText = i18n('social.finished');
+        }
+    }
+
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
-        const captchaToken = document.getElementById('captcha-token').value;
+        const captchaToken = captchaTokenInput ? captchaTokenInput.value : '';
         const submitBtn = e.target.querySelector('.btn-submit');
         const captcha_button = document.getElementById('captcha-button');
 
@@ -176,6 +360,7 @@ async function initLoginForm() {
                 await window.simpmcAPI.setAuthToken(result.token);
                 console.log('Token 已保存，准备切换到社交页面');
                 switchPage('social');
+                window.simpmcAPI.showFloatingNotification(i18n('social.login_success') , `${i18n('social.welcome_back')}${result.username}`)
             } else {
                 submitBtn.innerText = result.error || '登录失败';
                 submitBtn.style.backgroundColor = '#901212';
@@ -243,8 +428,8 @@ async function initSocial() {
         if (result.success || result.error === 'Not logged in') {
             userName.textContent = result.data.username || 'Unknown';
             userStatus.className = 'user_status ' + result.data.status;
-            userStatus.textContent = result.data.status === 'online' ? '在线' :
-                                     result.data.status === 'in_game' ? '游戏中' : '离线';
+            userStatus.textContent = result.data.status === 'online' ? i18n('social.status_online') :
+                                     result.data.status === 'in_game' ? i18n('social.status_in_game') : i18n('social.status_offline');
 
             userAvatar.src = getQQAvatarUrl(result.data.qq);
             userAvatar.style.display = 'block';
@@ -260,6 +445,7 @@ async function initSocial() {
             }
 
             await loadFriendsPreview(friendList, friendBadge, friendEmpty);
+            await startSocialStatusTimer();
             friend_loading.style.display = 'none';
 
             const countResult = await window.simpmcAPI.getActiveRequestsCount();
@@ -307,7 +493,7 @@ async function loadFriendsPreview(friendList, friendBadge, friendEmpty) {
                 <img class="friend_avatar" src="${getQQAvatarUrl(friend.qq)}" alt="avatar">
                 <div class="friend_info">
                     <span class="friend_name">${friend.username}</span>
-                    <span class="friend_status ${friend.status}">${friend.status === 'online' ? '在线' : friend.status === 'in_game' ? '游戏中' : '离线'}</span>
+                    <span class="friend_status ${friend.status}">${friend.status === 'online' ? i18n('social.status_online') : friend.status === 'in_game' ? i18n('social.status_in_game') : i18n('social.status_offline')}</span>
                 </div>
             `;
             friendList.appendChild(item);
@@ -329,6 +515,8 @@ window.logout = async function() {
         if (typeof stopHeartbeatTimer === 'function') {
             stopHeartbeatTimer();
         }
+        stopSocialStatusTimer();
+        window.simpmcAPI.showFloatingNotification(i18n('social.successful'), i18n('social.logout_successfully'))
         window.location.reload();
     } catch (error) {
         console.error('退出登录失败:', error);
@@ -480,6 +668,7 @@ async function initFriendsPage() {
     });
 
     await loadAllFriendData();
+    await startSocialStatusTimer();
 }
 
 async function loadAllFriendData() {
@@ -576,7 +765,7 @@ async function loadAllFriendData() {
                 <img class="friend-avatar" src="${getQQAvatarUrl(friend.qq)}" alt="avatar">
                 <div class="friend-info">
                     <span class="friend-name">${friend.username}</span>
-                    <span class="friend-status ${friend.status}">${friend.status === 'online' ? '在线' : friend.status === 'in_game' ? '游戏中' : '离线'}</span>
+                    <span class="friend-status ${friend.status}">${friend.status === 'online' ? i18n('social.status_online') : friend.status === 'in_game' ? i18n('social.status_in_game') : i18n('social.status_offline')}</span>
                 </div>
                 <button class="btn-remove" onclick="removeFriend(${friend.id})">删除</button>
             `;

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell, screen } = require('electron');
 const path = require('path');
 const os = require('os');
 const Store = require('electron-store');
@@ -59,6 +59,103 @@ function createWindow() {
 
     mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
     mainWindow.webContents.openDevTools();
+}
+
+let floatingNotifications = [];
+
+function repositionFloatingNotifications() {
+    const display = screen.getPrimaryDisplay();
+    const workArea = display.workArea;
+    let y = workArea.y + workArea.height - 20;
+    const windows = floatingNotifications.slice().reverse();
+    windows.forEach(win => {
+        if (win.isDestroyed()) return;
+        const bounds = win.getBounds();
+        y -= bounds.height;
+        win.setBounds({
+            x: workArea.x + workArea.width - bounds.width - 20,
+            y,
+            width: bounds.width,
+            height: bounds.height
+        });
+        y -= 10;
+    });
+}
+
+function createFloatingNotificationWindow(title, body) {
+    const display = screen.getPrimaryDisplay();
+    const workArea = display.workArea;
+    const width = 320;
+    const height = 90;
+    let y = workArea.y + workArea.height - height - 20;
+    floatingNotifications.forEach(win => {
+        if (!win.isDestroyed()) {
+            y -= win.getBounds().height + 10;
+        }
+    });
+
+    const win = new BrowserWindow({
+        width,
+        height,
+        x: workArea.x + workArea.width - width - 20,
+        y,
+        show: false,
+        frame: false,
+        transparent: true,
+        alwaysOnTop: true,
+        focusable: false,
+        skipTaskbar: true,
+        resizable: false,
+        hasShadow: false,
+        webPreferences: {
+            contextIsolation: true,
+            nodeIntegration: false,
+            sandbox: true
+        }
+    });
+
+    const filePath = path.join(__dirname, '../renderer/floating_notification.html');
+    win.loadFile(filePath, {
+        query: {
+            title,
+            body
+        }
+    });
+
+    const fadeOutDuration = 600;
+    const closeAfter = 6000;
+
+    win.once('ready-to-show', () => {
+        if (!win.isDestroyed()) {
+            win.showInactive();
+        }
+
+        setTimeout(() => {
+            if (win.isDestroyed()) return;
+
+            win.webContents.executeJavaScript(`
+                const card = document.querySelector('.notification-card');
+                if (card) {
+                    card.classList.add('fade-out');
+                    card.addEventListener('animationend', () => window.close(), { once: true });
+                    setTimeout(() => { window.close(); }, ${fadeOutDuration + 100});
+                } else {
+                    window.close();
+                }
+            `, true).catch(() => {
+                if (!win.isDestroyed()) win.close();
+            });
+        }, closeAfter);
+    });
+
+    win.on('closed', () => {
+        floatingNotifications = floatingNotifications.filter(item => item !== win);
+        repositionFloatingNotifications();
+    });
+
+    floatingNotifications.push(win);
+
+    return win;
 }
 
 // Deep Links 注册
@@ -1002,6 +1099,32 @@ ipcMain.handle('set_heartbeat_interval', async (event, interval) => {
     store.set('heartbeatInterval', interval);
     console.log('[主进程] 心跳间隔已设置为:', interval);
     return true;
+});
+
+ipcMain.handle('show_floating_notification', async (event, title, body) => {
+    try {
+        createFloatingNotificationWindow(title || 'SimpMC', body || '');
+        return { success: true };
+    } catch (error) {
+        console.error('[主进程] show_floating_notification 失败:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+// Show system notification (renderer can call via preload)
+ipcMain.handle('show_system_notification', async (event, title, body, options = {}) => {
+    try {
+        const notif = new Notification({
+            title: title || 'SimpMC',
+            body: body || '',
+            silent: !!options.silent
+        });
+        notif.show();
+        return { success: true };
+    } catch (error) {
+        console.error('[主进程] show_system_notification 失败:', error);
+        return { success: false, error: error.message };
+    }
 });
 
 ipcMain.handle('get_version_details', async (event, versionId) => {

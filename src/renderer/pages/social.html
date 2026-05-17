@@ -254,6 +254,44 @@
         font-size: 14px;
         padding: 20px;
     }
+
+    .social-toast-container {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 9999;
+        pointer-events: none;
+    }
+
+    .social-toast {
+        min-width: 220px;
+        max-width: 320px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        color: #fff;
+        background: rgba(35, 35, 35, 0.95);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        transform: translateY(10px);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        pointer-events: auto;
+    }
+
+    .social-toast.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .social-toast.success {
+        background: rgba(52, 181, 103, 0.95);
+    }
+
+    .social-toast.warning {
+        background: rgba(234, 84, 85, 0.95);
+    }
 </style>
 
 <div class="page-header">
@@ -286,4 +324,5 @@
         <div class="friend-list" id="friend_list"></div>
         <div class="empty_hint" id="friend_empty" style="display: none;" data-i18n="social.no_friends"></div>
     </div>
+    <div class="social-toast-container" id="social_notification_container"></div>
 </div>

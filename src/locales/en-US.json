@@ -386,8 +386,18 @@
         "no_sent_requests": "No sent requests",
         "no_results": "No results",
         "no_friends": "No friends yet",
+        "status_online": "Online",
+        "status_in_game": "In Game",
+        "status_offline": "Offline",
+        "more_friends": "{count} more friends",
+        "friend_online": "{name} is now online",
+        "friend_offline": "{name} is now offline",
         "request_sent": "Request sent",
         "request_failed": "Failed to send",
+        "test_notification": "Test Notification",
+        "test_notification_body": "This is a test notification from SimpMC.",
+        "test_notification_sent": "Test notification sent",
+        "test_notification_failed": "Failed to send test notification",
         "request_result_tip": "You can only view the result of each request here once; it will not be displayed again afterward."
     }
 }

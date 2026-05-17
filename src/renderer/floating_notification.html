@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./floating_notification.css">
+    <title>Notification</title>
+</head>
+<body>
+    <div class="notification-card">
+        <div class="notification-icon"><img src="../assets/logo.svg"></div>
+        <div class="notification-content">
+            <div class="notification-title" id="notificationTitle"></div>
+            <div class="notification-body" id="notificationBody"></div>
+        </div>
+        <img class="bg_logo" src="../assets/logo.svg">
+    </div>
+
+    <script>
+        function decodeQueryValue(key) {
+            const params = new URLSearchParams(window.location.search);
+            return params.has(key) ? decodeURIComponent(params.get(key)) : '';
+        }
+
+        const title = decodeQueryValue('title');
+        const body = decodeQueryValue('body');
+
+        document.getElementById('notificationTitle').textContent = title || 'SimpMC';
+        document.getElementById('notificationBody').textContent = body || '';
+    </script>
+</body>
+</html>

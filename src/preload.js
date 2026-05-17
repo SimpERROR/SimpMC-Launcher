@@ -89,5 +89,7 @@ contextBridge.exposeInMainWorld('simpmcAPI', {
     removeFriend: (friendId) => ipcRenderer.invoke('remove_friend', friendId),
     sendHeartbeat: (status) => ipcRenderer.invoke('send_heartbeat', status),
     getHeartbeatInterval: () => ipcRenderer.invoke('get_heartbeat_interval'),
-    setHeartbeatInterval: (interval) => ipcRenderer.invoke('set_heartbeat_interval', interval)
+    setHeartbeatInterval: (interval) => ipcRenderer.invoke('set_heartbeat_interval', interval),
+    showFloatingNotification: (title, body) => ipcRenderer.invoke('show_floating_notification', title, body),
+    showSystemNotification: (title, body, options) => ipcRenderer.invoke('show_system_notification', title, body, options)
 });

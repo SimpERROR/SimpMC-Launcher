@@ -386,8 +386,18 @@
         "no_sent_requests": "暫無發出的申請",
         "no_results": "暫無申請結果",
         "no_friends": "暫無好友",
+        "status_online": "在線",
+        "status_in_game": "遊戲中",
+        "status_offline": "離線",
+        "more_friends": "還有 {count} 位好友...",
+        "friend_online": "{name} 已上線",
+        "friend_offline": "{name} 已下線",
         "request_sent": "申請已發送",
         "request_failed": "發送失敗",
+        "test_notification": "測試通知",
+        "test_notification_body": "這是來自 SimpMC 的測試通知。",
+        "test_notification_sent": "測試通知已發送",
+        "test_notification_failed": "測試通知發送失敗",
         "request_result_tip": "您只能在此處看到每次申請的結果 1 次，此後將不再顯示。"
     }
 }

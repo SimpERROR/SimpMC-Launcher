@@ -160,6 +160,18 @@ async function finishOnboarding() {
         }
         
         await switchPage('home');
+
+        // 启动全局社交状态轮询（若已登录），以便在非社交页也能收到好友上下线通知
+        try {
+            if (window.simpmcAPI && typeof window.simpmcAPI.getAuthToken === 'function') {
+                const existingToken = await window.simpmcAPI.getAuthToken();
+                if (existingToken && typeof window.startSocialStatusTimer === 'function') {
+                    window.startSocialStatusTimer();
+                }
+            }
+        } catch (e) {
+            console.warn('检测并启动全局社交轮询失败:', e);
+        }
     } catch (error) {
         console.error('保存设置失败:', error);
     }
@@ -541,6 +553,9 @@ async function updateGreeting() {
 
 async function switchPage(pageName) {
     currentPage = pageName;
+    if (window.stopSocialStatusTimer && !['social', 'social/friends'].includes(pageName)) {
+        window.stopSocialStatusTimer();
+    }
     const menuIcons = document.querySelectorAll('.menu-icon');
     menuIcons.forEach(icon => {
         icon.classList.remove('active');

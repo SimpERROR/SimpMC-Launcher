@@ -386,8 +386,23 @@
         "no_sent_requests": "暂无发出的申请",
         "no_results": "暂无申请结果",
         "no_friends": "暂无好友",
+        "status_online": "在线",
+        "status_in_game": "游戏中",
+        "status_offline": "离线",
+        "more_friends": "还有 {count} 位好友...",
+        "friend_online": "{name} 已上线",
+        "friend_offline": "{name} 已下线",
         "request_sent": "申请已发送",
         "request_failed": "发送失败",
-        "request_result_tip": "您只能在此处看到每次申请的结果 1 次，此后将不再显示。"
+        "test_notification": "测试通知",
+        "test_notification_body": "这是来自 SimpMC 的测试通知。",
+        "test_notification_sent": "测试通知已发送",
+        "test_notification_failed": "测试通知发送失败",
+        "request_result_tip": "您只能在此处看到每次申请的结果 1 次，此后将不再显示。",
+        "login_success": "登录成功！",
+        "welcome_back": "欢迎回来，",
+        "logout": "退出登录",
+        "logout_successfully": "已成功退出登录。",
+        "successful": "操作完成"
     }
 }
